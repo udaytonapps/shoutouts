@@ -1,19 +1,23 @@
 import { WorkspacePremium } from "@mui/icons-material";
-import { Box, Button, Tab, Tabs, Typography } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { useEffect, useState } from "react";
-import AwardPanel from "../components/AwardPanel";
-import TabPanel from "../components/common/TabPanel";
+import LearnerDashboard from "../components/LearnerDashboard";
 import { getLearnerAwards } from "../utils/api-connector";
-import { a11yProps } from "../utils/common/helpers";
 import { LearnerAward } from "../utils/types";
 
-type LearnerTab = "RECEIVED" | "SENT" | "LEADERBOARD";
-const tabs: LearnerTab[] = ["RECEIVED", "SENT", "LEADERBOARD"];
+type SendStage = typeof sendStages[number];
+const sendStages = [
+  "SELECT_RECIPIENT",
+  "SELECT_AWARD",
+  "ENTER_COMMENT",
+  "CONFIRM",
+] as const;
 
 function LearnerView() {
-  const [tabPosition, setTabPosition] = useState(0);
   const [loading, setLoading] = useState(false);
   const [learnerAwards, setLearnerAwards] = useState<LearnerAward[]>([]);
+
+  const [stage, setStage] = useState<SendStage>();
 
   useEffect(() => {
     // Retrieve the list of alerts to display
@@ -29,12 +33,7 @@ function LearnerView() {
   };
 
   const handleClickSend = () => {
-    // setDialogOpen(true);
-  };
-
-  // Tab management
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabPosition(newValue);
+    setStage("SELECT_RECIPIENT");
   };
 
   return (
@@ -52,53 +51,7 @@ function LearnerView() {
       {/* <Box pt={1}>
         <CommentsTable loading={loading} rows={comments} />
       </Box> */}
-      <Box pt={6} sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <Tabs
-          value={tabPosition}
-          variant="scrollable"
-          onChange={handleTabChange}
-          aria-label="basic tabs example"
-        >
-          {tabs.map((tab, i) => {
-            return (
-              <Tab
-                key={`tab-${tab}`}
-                label={
-                  <Typography pb={0.5} variant="body2">
-                    {tab}
-                  </Typography>
-                }
-                {...a11yProps(i)}
-              />
-            );
-          })}
-        </Tabs>
-      </Box>
-      {tabs.map((tab, i) => {
-        return (
-          <TabPanel key={`tab-panel-${tab}`} value={tabPosition} index={i}>
-            {tab === "RECEIVED" && (
-              <Box
-                display={"flex"}
-                flexDirection={"column"}
-                alignItems={"center"}
-              >
-                {learnerAwards.map((award, i) => (
-                  <Box
-                    key={`award-box-${i}`}
-                    p={1}
-                    sx={{ maxWidth: 600, width: "100%" }}
-                  >
-                    <AwardPanel award={award} />
-                  </Box>
-                ))}
-              </Box>
-            )}
-            {tab === "SENT" && <>{tab} TAB CONTENT HERE</>}
-            {tab === "LEADERBOARD" && <>{tab} TAB CONTENT HERE</>}
-          </TabPanel>
-        );
-      })}
+      <LearnerDashboard learnerAwards={learnerAwards} />
     </>
   );
 }
