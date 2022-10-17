@@ -7,6 +7,8 @@ import {
   GetCourseAlertsResponse,
   TemplateComment,
   GetCourseCommentsResponse,
+  LearnerAward,
+  GetLearnerAwardResponse,
 } from "./types";
 
 const config = EnvConfig[getEnvironment()];
@@ -87,6 +89,18 @@ export const getCourseComments = async (): Promise<TemplateComment[]> => {
   try {
     const res = await axios.get<GetCourseCommentsResponse>(
       `${config.apiUrl}/learner/comments?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const getLearnerAwards = async (): Promise<LearnerAward[]> => {
+  try {
+    const res = await axios.get<GetLearnerAwardResponse>(
+      `${config.apiUrl}/learner/received?PHPSESSID=${config.sessionId}`
     );
     return res.data.data || [];
   } catch (e) {
