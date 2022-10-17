@@ -41,3 +41,27 @@ AppRouter::add($resource . '/comments', function () {
     $res = LearnerCtr::getCourseComments();
     return AppRouter::sendJson($res);
 }, 'get');
+
+/** READ Received Awards */
+AppRouter::add($resource . '/received', function () {
+    // Note: this one just calls the learner DAO and doesn't really need to be 
+    // 'restricted' in this state, but it is generally good practice to do so....
+    $res = LearnerCtr::getReceivedApprovedCourseAwards();
+    return AppRouter::sendJson($res);
+}, 'get');
+
+// /** READ Sent Awards */
+// AppRouter::add($resource . '/sent', function () {
+//     // Note: this one just calls the learner DAO and doesn't really need to be 
+//     // 'restricted' in this state, but it is generally good practice to do so....
+//     $res = LearnerCtr::getCourseComments();
+//     return AppRouter::sendJson($res);
+// }, 'get');
+
+// /** READ Leaderboard Listing */
+// AppRouter::add($resource . '/leaderboard', function () {
+//     // Note: this one just calls the learner DAO and doesn't really need to be 
+//     // 'restricted' in this state, but it is generally good practice to do so....
+//     $res = LearnerCtr::getCourseComments();
+//     return AppRouter::sendJson($res);
+// }, 'get');

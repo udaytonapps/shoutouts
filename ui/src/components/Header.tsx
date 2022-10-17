@@ -6,7 +6,7 @@ interface HeaderProps {}
 function Header(props: HeaderProps) {
   return (
     <Box mt={6}>
-      <Typography variant="h3">Template Application</Typography>
+      <Typography variant="h3">Awards</Typography>
     </Box>
   );
 }

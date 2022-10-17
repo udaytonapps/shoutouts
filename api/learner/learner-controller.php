@@ -41,5 +41,14 @@ class LearnerCtr
         // Instructor can call learner DAO, but not the other way around
         return self::$DAO->getCourseComments(self::$contextId);
     }
+
+    // AWARDS
+
+    /** Get received awards */
+    static function getReceivedApprovedCourseAwards()
+    {
+        // Instructor can call learner DAO, but not the other way around
+        return self::$DAO->getReceivedApprovedCourseAwards(self::$user->id, self::$contextId);
+    }
 }
 LearnerCtr::init();

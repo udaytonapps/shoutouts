@@ -1,10 +1,10 @@
 <?php
 
 $REGISTER_LTI2 = array(
-    "name" => "App Template",
-    "FontAwesome" => "fa-coins",
-    "short_name" => "Tokens",
-    "description" => "Create a learning application.",
+    "name" => "Awards",
+    "FontAwesome" => "fa-medal",
+    "short_name" => "Awards",
+    "description" => "Award and receive praise.",
     "messages" => array("launch", "launch_grade"),
     "license" => "Apache",
     "languages" => array(

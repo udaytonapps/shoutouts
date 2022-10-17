@@ -21,12 +21,22 @@ export interface TemplateComment {
   type: AlertColor;
 }
 
+export interface LearnerAward {
+  id: string;
+  comment: string;
+  label: string;
+  description: string;
+  imageUrl: string;
+}
+
+
 // API Interfaces
 export interface GetCourseAlertsResponse extends ApiResponse {
   data: TemplateAlert[];
 }
-
-// API Interfaces
 export interface GetCourseCommentsResponse extends ApiResponse {
   data: TemplateComment[];
+}
+export interface GetLearnerAwardResponse extends ApiResponse {
+  data: LearnerAward[];
 }
