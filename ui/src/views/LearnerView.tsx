@@ -1,85 +1,104 @@
-import { Add } from "@mui/icons-material";
-import { Box, Button } from "@mui/material";
-import { useContext, useEffect, useState } from "react";
-import AddCommentDialog from "../components/AddCommentDialog";
-import AlertPanel from "../components/AlertPanel";
-import CommentsTable from "../components/CommentsTable";
-import { addComment, getCourseComments } from "../utils/api-connector";
-import { SnackbarContext } from "../utils/common/context";
-import { TemplateComment } from "../utils/types";
+import { WorkspacePremium } from "@mui/icons-material";
+import { Box, Button, Tab, Tabs, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
+import AwardPanel from "../components/AwardPanel";
+import TabPanel from "../components/common/TabPanel";
+import { getLearnerAwards } from "../utils/api-connector";
+import { a11yProps } from "../utils/common/helpers";
+import { LearnerAward } from "../utils/types";
+
+type LearnerTab = "RECEIVED" | "SENT" | "LEADERBOARD";
+const tabs: LearnerTab[] = ["RECEIVED", "SENT", "LEADERBOARD"];
 
 function LearnerView() {
-  const snackbar = useContext(SnackbarContext);
-  const [comments, setComments] = useState<TemplateComment[]>([]);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [tabPosition, setTabPosition] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [learnerAwards, setLearnerAwards] = useState<LearnerAward[]>([]);
 
   useEffect(() => {
     // Retrieve the list of alerts to display
-    fetchComments();
+    fetchLearnerAwards();
     // The empty dependency array '[]' means this will run once, when the component renders
   }, []);
 
-  const fetchComments = async () => {
+  const fetchLearnerAwards = async () => {
     setLoading(true);
-    const comments = await getCourseComments();
-    setComments(comments);
+    const awards = await getLearnerAwards();
+    setLearnerAwards(awards);
     setLoading(false);
   };
 
-  const handleClickAddComment = () => {
-    setDialogOpen(true);
+  const handleClickSend = () => {
+    // setDialogOpen(true);
   };
 
-  const handleCloseDialog = (event?: object, reason?: string) => {
-    // This condition prevents the user from closing the dialog by
-    // clicking in the backdrop or hitting the esc key
-    // The condition can be removed, it is just here to show the option
-    const reasonsToStayOpen = ["backdropClick", "escapeKeyDown"];
-    if (reason && reasonsToStayOpen.includes(reason)) {
-      return;
-    }
-    setDialogOpen(false);
+  // Tab management
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabPosition(newValue);
   };
-
-  const handleSaveDialog = async (newComment: TemplateComment) => {
-    await addComment(newComment);
-    snackbar.set({ type: "success", message: "Comment added" });
-    // Close the dialog
-    setDialogOpen(false);
-    // Refresh the alerts to display
-    await fetchComments();
-  };
-
-  // const handleDeleteComment = async (commentId: string) => {
-  //   // await deleteComment(commentId);
-  //   // Refresh the alerts to display
-  //   await fetchComments();
-  // };
 
   return (
     <>
-      <Box pb={1}>
-        <AlertPanel />
-      </Box>
-      <Box display={"flex"} justifyContent={"end"}>
+      <Box display={"flex"} justifyContent={"center"}>
         <Button
-          startIcon={<Add />}
-          variant="outlined"
-          onClick={handleClickAddComment}
+          endIcon={<WorkspacePremium />}
+          size="large"
+          variant="contained"
+          onClick={handleClickSend}
         >
-          Add Comment
+          Send Kudos
         </Button>
       </Box>
-      <Box pt={1}>
+      {/* <Box pt={1}>
         <CommentsTable loading={loading} rows={comments} />
+      </Box> */}
+      <Box pt={6} sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs
+          value={tabPosition}
+          variant="scrollable"
+          onChange={handleTabChange}
+          aria-label="basic tabs example"
+        >
+          {tabs.map((tab, i) => {
+            return (
+              <Tab
+                key={`tab-${tab}`}
+                label={
+                  <Typography pb={0.5} variant="body2">
+                    {tab}
+                  </Typography>
+                }
+                {...a11yProps(i)}
+              />
+            );
+          })}
+        </Tabs>
       </Box>
-      {/* DIALOGS */}
-      <AddCommentDialog
-        handleClose={handleCloseDialog}
-        handleSave={handleSaveDialog}
-        open={dialogOpen}
-      />
+      {tabs.map((tab, i) => {
+        return (
+          <TabPanel key={`tab-panel-${tab}`} value={tabPosition} index={i}>
+            {tab === "RECEIVED" && (
+              <Box
+                display={"flex"}
+                flexDirection={"column"}
+                alignItems={"center"}
+              >
+                {learnerAwards.map((award, i) => (
+                  <Box
+                    key={`award-box-${i}`}
+                    p={1}
+                    sx={{ maxWidth: 600, width: "100%" }}
+                  >
+                    <AwardPanel award={award} />
+                  </Box>
+                ))}
+              </Box>
+            )}
+            {tab === "SENT" && <>{tab} TAB CONTENT HERE</>}
+            {tab === "LEADERBOARD" && <>{tab} TAB CONTENT HERE</>}
+          </TabPanel>
+        );
+      })}
     </>
   );
 }
