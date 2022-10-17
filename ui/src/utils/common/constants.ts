@@ -11,8 +11,8 @@ export const APP_INFO_OVERRIDES: Partial<AppInfo> = {
   // contextId: "",
   // isInstructor: true,
   // linkId: "",
-  // sessionId: "42ed85ddafc30d53a3b672f1f011e23a", // Learner session
-  sessionId: "591fa77d4c121eed9cf79149d8b08f57", // Instructor session
+  sessionId: "7b29e5ff0da447471f2cbce73ffdf172", // Learner session
+  // sessionId: "32eb61e5d101820f572947e59f34f4b5", // Instructor session
   // username: "",
   // darkMode: true,
   // baseColor: "#6B5B95", // DRK PRPL
@@ -25,15 +25,15 @@ const sessionId = getSessionId();
 
 export const EnvConfig: Record<CraEnvironment, LtiSessionConfig> = {
   pre_build: {
-    apiUrl: "/learning-apps/mod/mod-template/api/index.php",
+    apiUrl: "/learning-apps/mod/mod-kudos/api/index.php",
     sessionId: APP_INFO_OVERRIDES.sessionId || "",
   },
   local_build: {
-    apiUrl: "/learning-apps/mod/mod-template/api/index.php",
+    apiUrl: "/learning-apps/mod/mod-kudos/api/index.php",
     sessionId,
   },
   deployed_build: {
-    apiUrl: "/mod/template/api/index.php",
+    apiUrl: "/mod/awards/api/index.php",
     sessionId,
   },
 };
