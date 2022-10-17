@@ -4,51 +4,76 @@
 $DATABASE_UNINSTALL = array();
 
 /** Table names */
-$TEMPLATE_ALERT_TABLE_NAME = "{$CFG->dbprefix}template_alert";
-$TEMPLATE_COMMENT_TABLE_NAME = "{$CFG->dbprefix}template_comment";
+$AWARDS_INSTANCE_TABLE_NAME = "{$CFG->dbprefix}awards_instance";
+$AWARDS_TYPE_TABLE_NAME = "{$CFG->dbprefix}awards_type";
 
 /** Table schemas */
-$TEMPLATE_ALERT = "CREATE TABLE {$TEMPLATE_ALERT_TABLE_NAME} (
+
+$AWARDS_INSTANCE = "CREATE TABLE {$AWARDS_INSTANCE_TABLE_NAME} (
 
     /* PRIMARY KEY */
-    alert_id                INTEGER NOT NULL AUTO_INCREMENT,
+    award_instance_id             INTEGER NOT NULL AUTO_INCREMENT,
     
     /* COMMON COLS */
-    user_id                 INTEGER NOT NULL, /* ID of the instructor the created the settings */
-    context_id              INTEGER NOT NULL, /* Tracked and scoped, this is the course */
-    link_id                 INTEGER NOT NULL, /* Tracked but not scoped, this is the instance */
-    created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    /* TEMPLATE ALERT COLS */
-    alert_message           TEXT NOT NULL,
-    alert_type              VARCHAR(255) NOT NULL,
-
-    PRIMARY KEY(alert_Id)
-
-) ENGINE = InnoDB DEFAULT CHARSET=utf8";
-
-$TEMPLATE_COMMENT = "CREATE TABLE {$TEMPLATE_COMMENT_TABLE_NAME} (
-
-    /* PRIMARY KEY */
-    comment_id              INTEGER NOT NULL AUTO_INCREMENT,
-    
-    /* COMMON COLS */
-    user_id                 INTEGER NOT NULL, /* ID of the instructor the created the settings */
     context_id              INTEGER NOT NULL, /* Tracked and scoped, this is the course */
     link_id                 INTEGER NOT NULL, /* Tracked but not scoped, this is the instance */
     created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     /* TEMPLATE COMMENT COLS */
-    comment_message         TEXT NOT NULL,
+    sender_id               INTEGER NOT NULL, /* ID of the learner who sent it */
+    recipient_id            INTEGER NOT NULL, /* ID of the learner who received it */
+    award_type_id           INTEGER NOT NULL, /* ID of the associated award type */
+    comment_message         TEXT,
+    approved                BOOLEAN,
 
-    PRIMARY KEY(comment_id)
+    PRIMARY KEY(award_instance_id)
+
+) ENGINE = InnoDB DEFAULT CHARSET=utf8";
+
+$AWARDS_TYPE = "CREATE TABLE {$AWARDS_TYPE_TABLE_NAME} (
+
+    /* PRIMARY KEY */
+    award_type_id           INTEGER NOT NULL AUTO_INCREMENT,
+    
+    /* COMMON COLS */
+    context_id              INTEGER, /* Tracked and scoped, this is the course */
+    link_id                 INTEGER, /* Tracked but not scoped, this is the instance */
+    created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    /* TEMPLATE COMMENT COLS */
+    image_url               TEXT NOT NULL,
+    label                   TEXT NOT NULL,
+    short_description       TEXT NOT NULL,
+
+    PRIMARY KEY(award_type_id)
 
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8";
 
 /** Table installation (if tables don't exist) */
 $DATABASE_INSTALL = array(
-    array($TEMPLATE_ALERT_TABLE_NAME, $TEMPLATE_ALERT),
-    array($TEMPLATE_COMMENT_TABLE_NAME, $TEMPLATE_COMMENT),
+    // array($AWARDS_SETTINGS_TABLE_NAME, $AWARDS_SETTINGS),
+    array($AWARDS_INSTANCE_TABLE_NAME, $AWARDS_INSTANCE),
+    array($AWARDS_TYPE_TABLE_NAME, $AWARDS_TYPE)
 );
+
+$DATABASE_UPGRADE = function ($oldversion) {
+    global $PDOX, $AWARDS_TYPE_TABLE_NAME;
+    // Check if any types exist
+    $sql = "SELECT EXISTS (SELECT 1 FROM {$AWARDS_TYPE_TABLE_NAME}) as data_exists";
+    $q = $PDOX->rowDie($sql);
+    if (!isset($q['data_exists']) || $q['data_exists'] != true) {
+        // There are no award types in the db - default them
+        $sql = "INSERT INTO {$AWARDS_TYPE_TABLE_NAME} 
+                    (image_url, label, short_description)
+                VALUES
+                    ('/assets/team-player.jpg', 'Team Player', 'You''ve been sent recognition for contributing as a great team player!'),
+                    ('/assets/creative.jpg', 'Creative', 'You''ve been sent recognition for your creativity!')";
+        echo ("Upgrading: " . $sql . "<br/>\n");
+        error_log("Upgrading: " . $sql);
+        $q = $PDOX->queryDie($sql);
+    }
+
+    return '202210131335';
+};
