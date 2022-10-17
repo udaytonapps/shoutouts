@@ -17,6 +17,8 @@ class LearnerDAO
         $this->p = $CFG->dbprefix;
         $this->alertTable = $CFG->dbprefix . "template_alert";
         $this->commentTable = $CFG->dbprefix . "template_comment";
+        $this->awardInstanceTable = $CFG->dbprefix . "awards_instance";
+        $this->awardTypeTable = $CFG->dbprefix . "awards_type";
         $this->PDOX = $PDOX;
     }
 
@@ -49,6 +51,28 @@ class LearnerDAO
             ON u.user_id = c.user_id
         WHERE c.context_id = :contextId ORDER BY c.created_at DESC;";
         $arr = array(':contextId' => $contextId);
+        return $this->PDOX->allRowsDie($query, $arr);
+    }
+
+    // AWARDS
+
+    /** Retrieves awards for a given context (course) */
+    public function getReceivedApprovedCourseAwards($userId, $contextId)
+    {
+        // These are being aliased to camelCase - may or may not be really necessary
+        $query = "SELECT    ai.award_instance_id as `id`,
+                            ai.comment_message as `comment`,
+                            ai.created_at as `createdAt`,
+                            atype.image_url as imageUrl,
+                            atype.label as label,
+                            atype.short_description as 'description'
+                FROM {$this->awardInstanceTable} ai
+        INNER JOIN {$this->awardTypeTable} atype
+            ON atype.award_type_id = ai.award_type_id
+        INNER JOIN {$this->p}lti_user u
+            ON ai.recipient_id = u.user_id
+        WHERE ai.recipient_id = :userId AND ai.context_id = :contextId AND ai.approved = 1 ORDER BY ai.created_at DESC;";
+        $arr = array(':userId' => $userId, ':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
     }
 }
