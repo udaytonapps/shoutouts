@@ -9,6 +9,10 @@ import {
   GetCourseCommentsResponse,
   LearnerAward,
   GetLearnerAwardResponse,
+  Recipient,
+  GetRecipientResponse,
+  AwardType,
+  GetPotentialAwardResponse,
 } from "./types";
 
 const config = EnvConfig[getEnvironment()];
@@ -97,6 +101,18 @@ export const getCourseComments = async (): Promise<TemplateComment[]> => {
   }
 };
 
+export const getRecipients = async (): Promise<Recipient[]> => {
+  try {
+    const res = await axios.get<GetRecipientResponse>(
+      `${config.apiUrl}/learner/recipients?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
 export const getLearnerAwards = async (): Promise<LearnerAward[]> => {
   try {
     const res = await axios.get<GetLearnerAwardResponse>(
@@ -106,5 +122,35 @@ export const getLearnerAwards = async (): Promise<LearnerAward[]> => {
   } catch (e) {
     console.error(e);
     return [];
+  }
+};
+
+export const getPotentialAwards = async (): Promise<AwardType[]> => {
+  try {
+    const res = await axios.get<GetPotentialAwardResponse>(
+      `${config.apiUrl}/learner/award-types?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const sendAward = async (
+  recipientId: string,
+  awardTypeId: string,
+  comment?: string
+): Promise<void> => {
+  try {
+    const body = { recipientId, awardTypeId, comment };
+    await axios.post<ApiResponse>(
+      `${config.apiUrl}/learner/awards?PHPSESSID=${config.sessionId}`,
+      body
+    );
+    return;
+  } catch (e) {
+    console.error(e);
+    return;
   }
 };
