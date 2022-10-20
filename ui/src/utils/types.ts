@@ -45,6 +45,13 @@ export interface LearnerAward {
   imageUrl: string;
 }
 
+export interface SentAward extends LearnerAward {
+  recipientName: string;
+  status: RequestStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AwardType {
   id: string;
   label: string;
@@ -58,7 +65,22 @@ export interface Recipient {
   familyName: string;
 }
 
+export interface AwardStatusUpdateData {
+  id: string;
+  status: RequestStatus;
+  instructorComment?: string;
+}
+
+export interface HistoryTableRow extends SentAward {
+  instructorComment?: string;
+}
+
+export type RequestStatus = "SUBMITTED" | "ACCEPTED" | "REJECTED" | "PENDING";
+
 // API Interfaces
+export interface GetContextConfigurationResponse extends ApiResponse {
+  data: AwardsConfiguration;
+}
 export interface GetCourseAlertsResponse extends ApiResponse {
   data: TemplateAlert[];
 }
@@ -67,6 +89,9 @@ export interface GetCourseCommentsResponse extends ApiResponse {
 }
 export interface GetLearnerAwardResponse extends ApiResponse {
   data: LearnerAward[];
+}
+export interface GetSentAwardsResponse extends ApiResponse {
+  data: SentAward[];
 }
 export interface GetPotentialAwardResponse extends ApiResponse {
   data: AwardType[];

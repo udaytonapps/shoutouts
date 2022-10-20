@@ -1,5 +1,6 @@
+import { Theme } from "@mui/material";
 import { DateTime, Duration } from "luxon";
-import { AppInfo } from "../types";
+import { AppInfo, RequestStatus } from "../types";
 import {
   APP_INFO_OVERRIDES,
   DB_DATE_TIME_FORMAT,
@@ -173,4 +174,14 @@ export const generateGoogleCalendarUrl = (
     ctz: "America/New_York",
   });
   return `https://calendar.google.com/calendar/event?${urlParams.toString()}`;
+};
+
+export const getStatusColors = (theme: Theme) => {
+  const statusColors: Record<RequestStatus, string> = {
+    ACCEPTED: theme.palette.success.main,
+    PENDING: theme.palette.warning.main,
+    REJECTED: theme.palette.error.main,
+    SUBMITTED: theme.palette.warning.main,
+  };
+  return statusColors;
 };
