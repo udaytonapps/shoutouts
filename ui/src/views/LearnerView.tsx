@@ -50,7 +50,6 @@ function LearnerView() {
   }, []);
 
   useEffect(() => {
-    console.log(selectedRecipient);
     if (selectedRecipient) {
       // Someone was chosen, move to next step
       setStage("SELECT_AWARD");
@@ -93,12 +92,8 @@ function LearnerView() {
     if (selectedRecipient && selectedAward) {
       sendAward(selectedRecipient.userId, selectedAward.id, comment).then(
         () => {
-          snackbar.set({ message: "Award sent!", type: "success" });
           // Clear out values
-          setStage(undefined);
-          setSelectedAward(undefined);
-          setSelectedRecipient(undefined);
-          setComment("");
+          setStage("CONFIRM");
         }
       );
     }
@@ -187,11 +182,47 @@ function LearnerView() {
           return <></>;
         }
       case "CONFIRM":
-        return (
-          <Box>
-            <SelectionConfirm />
-          </Box>
-        );
+        if (selectedAward && selectedRecipient) {
+          const sentAward: LearnerAward = {
+            id: "",
+            comment,
+            label: selectedAward.label,
+            description: selectedAward.description,
+            imageUrl: selectedAward.imageUrl,
+          };
+          return (
+            <Box>
+              <SelectionConfirm
+                configuration={
+                  {
+                    moderation_enabled: true,
+                    anonymous_enabled: false,
+                    recipient_view_enabled: true,
+                  } as AwardsConfiguration
+                }
+                recipient={selectedRecipient}
+                sentAward={sentAward}
+              />
+              <Box display={"flex"} justifyContent={"center"} pt={3}>
+                <Button
+                  variant={"contained"}
+                  onClick={() => {
+                    // Clear out all state
+                    setStage(undefined);
+                    setSelectedAward(undefined);
+                    setSelectedRecipient(undefined);
+                    setComment("");
+                  }}
+                >
+                  Dismiss
+                </Button>
+              </Box>
+            </Box>
+          );
+        } else {
+          setStage("ENTER_COMMENT");
+          return <></>;
+        }
     }
   };
 
