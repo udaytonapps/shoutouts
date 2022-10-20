@@ -34,7 +34,7 @@ $AWARDS_CONFIGURATION = "CREATE TABLE {$AWARDS_CONFIGURATION_TABLE_NAME} (
     awarded_cooldown        INTEGER, -- NULLABLE?
     received_value          INTEGER, -- NULLABLE?
     received_limit          INTEGER, -- NULLABLE?
-    received_cooldown        INTEGER, -- NULLABLE?
+    received_cooldown       INTEGER, -- NULLABLE?
 
 
     PRIMARY KEY(configuration_id)
@@ -56,8 +56,8 @@ $AWARDS_INSTANCE = "CREATE TABLE {$AWARDS_INSTANCE_TABLE_NAME} (
     sender_id               INTEGER NOT NULL, /* ID of the learner who sent it */
     recipient_id            INTEGER NOT NULL, /* ID of the learner who received it */
     award_type_id           INTEGER NOT NULL, /* ID of the associated award type */
+    award_status            TEXT NOT NULL,
     comment_message         TEXT,
-    approved                BOOLEAN,
 
     PRIMARY KEY(award_instance_id)
 

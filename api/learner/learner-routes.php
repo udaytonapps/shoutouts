@@ -11,8 +11,6 @@ AppRouter::add($resource . '/check', function () {
 
 /** READ */
 AppRouter::add($resource . '/alerts', function () {
-    // Note: this one just calls the learner DAO and doesn't really need to be 
-    // 'restricted' in this state, but it is generally good practice to do so....
     $res = LearnerCtr::getCourseAlerts();
     return AppRouter::sendJson($res);
 }, 'get');
@@ -36,32 +34,38 @@ AppRouter::add($resource . '/comments', function () {
 
 /** READ */
 AppRouter::add($resource . '/comments', function () {
-    // Note: this one just calls the learner DAO and doesn't really need to be 
-    // 'restricted' in this state, but it is generally good practice to do so....
     $res = LearnerCtr::getCourseComments();
+    return AppRouter::sendJson($res);
+}, 'get');
+
+// AWARDS
+
+/** READ configuration */
+AppRouter::add($resource . '/configuration', function () {
+    $res = LearnerCtr::getContextConfiguration();
     return AppRouter::sendJson($res);
 }, 'get');
 
 /** READ Received Awards */
 AppRouter::add($resource . '/received', function () {
-    // Note: this one just calls the learner DAO and doesn't really need to be 
-    // 'restricted' in this state, but it is generally good practice to do so....
     $res = LearnerCtr::getReceivedApprovedCourseAwards();
+    return AppRouter::sendJson($res);
+}, 'get');
+
+/** READ Sent Awards */
+AppRouter::add($resource . '/sent', function () {
+    $res = LearnerCtr::getSentCourseAwards();
     return AppRouter::sendJson($res);
 }, 'get');
 
 /** READ Roster of Recipients Awards */
 AppRouter::add($resource . '/recipients', function () {
-    // Note: this one just calls the learner DAO and doesn't really need to be 
-    // 'restricted' in this state, but it is generally good practice to do so....
     $res = LearnerCtr::getRecipients();
     return AppRouter::sendJson($res);
 }, 'get');
 
 /** READ Roster of Recipients Awards */
 AppRouter::add($resource . '/award-types', function () {
-    // Note: this one just calls the learner DAO and doesn't really need to be 
-    // 'restricted' in this state, but it is generally good practice to do so....
     $res = LearnerCtr::getEnabledAwardTypes();
     return AppRouter::sendJson($res);
 }, 'get');
@@ -83,18 +87,8 @@ AppRouter::add($resource . '/awards', function () {
     }
 }, 'post');
 
-// /** READ Sent Awards */
-// AppRouter::add($resource . '/sent', function () {
-//     // Note: this one just calls the learner DAO and doesn't really need to be 
-//     // 'restricted' in this state, but it is generally good practice to do so....
-//     $res = LearnerCtr::getCourseComments();
-//     return AppRouter::sendJson($res);
-// }, 'get');
-
 // /** READ Leaderboard Listing */
 // AppRouter::add($resource . '/leaderboard', function () {
-//     // Note: this one just calls the learner DAO and doesn't really need to be 
-//     // 'restricted' in this state, but it is generally good practice to do so....
 //     $res = LearnerCtr::getCourseComments();
 //     return AppRouter::sendJson($res);
 // }, 'get');
