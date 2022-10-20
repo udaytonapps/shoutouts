@@ -19,7 +19,7 @@ export default function AwardOption(props: AwardOptionProps) {
     <Card>
       <CardContentLessPadding>
         <Box display={"flex"} flexDirection={"column"} alignItems={"center"}>
-          <AwardImage label={award.label} url={award.imageUrl} />
+          <AwardImage label={award.label} url={award.imageUrl} pixels={125} />
           <Typography pt={1} textAlign={"center"}>
             {award.label}
           </Typography>
