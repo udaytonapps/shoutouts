@@ -17,8 +17,10 @@ class LearnerDAO
         $this->p = $CFG->dbprefix;
         $this->alertTable = $CFG->dbprefix . "template_alert";
         $this->commentTable = $CFG->dbprefix . "template_comment";
+        $this->awardConfigurationTable = $CFG->dbprefix . "awards_configuration";
         $this->awardInstanceTable = $CFG->dbprefix . "awards_instance";
         $this->awardTypeTable = $CFG->dbprefix . "awards_type";
+        $this->awardTypeExclusionsTable = $CFG->dbprefix . "awards_type_exclusion";
         $this->PDOX = $PDOX;
     }
 
@@ -55,6 +57,51 @@ class LearnerDAO
     }
 
     // AWARDS
+
+    public function getConfiguration($contextId)
+    {
+        $query = "SELECT * FROM {$this->awardConfigurationTable}
+        WHERE context_id = :contextId;";
+        $arr = array(':contextId' => $contextId);
+        return $this->PDOX->rowDie($query, $arr);
+    }
+
+    /** Adds an award instance */
+    public function addAward($contextId, $linkId, $senderId, $recipientId, $awardTypeId, $commentText, $autoApproved)
+    {
+        $query = "INSERT INTO {$this->awardInstanceTable} (context_id, link_id, sender_id, recipient_id, award_type_id, comment_message, approved)
+        VALUES (:contextId, :linkId, :senderId, :recipientId, :awardTypeId, :commentText, :autoApproved);";
+        $arr = array(
+            ':contextId' => $contextId,
+            ':linkId' => $linkId,
+            ':senderId' => $senderId,
+            ':recipientId' => $recipientId,
+            ':awardTypeId' => $awardTypeId,
+            ':commentText' => $commentText,
+            ':autoApproved' => $autoApproved,
+        );
+        $this->PDOX->queryDie($query, $arr);
+        return $this->PDOX->lastInsertId();
+    }
+
+    /** Retrieves a list of awards that are enabled for the given context (course) */
+    public function getEnabledAwardTypes($contextId)
+    {
+        // These are being aliased to camelCase - may or may not be really necessary
+        $query = "SELECT    t.award_type_id as `id`,
+                            t.image_url as `imageUrl`,
+                            t.label as `label`,
+                            t.short_description as `description`
+        FROM {$this->awardTypeTable} t
+        LEFT OUTER JOIN {$this->awardTypeExclusionsTable} e
+        ON t.award_type_id = e.award_type_id
+        WHERE (t.context_id = :contextId OR t.context_id IS NULL)
+        AND t.is_active = 1
+        AND e.exclusion_id IS NULL
+        ORDER BY t.label DESC;";
+        $arr = array(':contextId' => $contextId);
+        return $this->PDOX->allRowsDie($query, $arr);
+    }
 
     /** Retrieves awards for a given context (course) */
     public function getReceivedApprovedCourseAwards($userId, $contextId)
