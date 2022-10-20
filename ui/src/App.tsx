@@ -19,6 +19,7 @@ function App() {
   const [appConfig, setAppconfig] = useState<LtiAppInfo>();
   const [snackbarOptions, setSnackbarOptions] = useState<SnackbarOptions>({
     type: "info",
+    open: false,
   });
 
   useEffect(() => {
@@ -55,6 +56,8 @@ function App() {
       horizontal: "right",
     },
     autoHideDuration: 4000,
+    // This allows the set to default to open without needing to specify every time
+    open: snackbarOptions.open === false ? false : true,
     onClose: () => {
       setSnackbarOptions({
         type: snackbarOptions.type,
