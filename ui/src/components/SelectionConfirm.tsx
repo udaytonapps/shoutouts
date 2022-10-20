@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { AwardsConfiguration, LearnerAward, Recipient } from "../utils/types";
 import AwardPanel from "./AwardPanel";
 
