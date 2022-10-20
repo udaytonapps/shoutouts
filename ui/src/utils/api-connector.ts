@@ -13,6 +13,10 @@ import {
   GetRecipientResponse,
   AwardType,
   GetPotentialAwardResponse,
+  AwardsConfiguration,
+  GetContextConfigurationResponse,
+  SentAward,
+  GetSentAwardsResponse,
 } from "./types";
 
 const config = EnvConfig[getEnvironment()];
@@ -62,6 +66,19 @@ export const deleteAlert = async (alertId: string): Promise<void> => {
 };
 
 /** LEARNER */
+
+export const getContextConfiguration =
+  async (): Promise<AwardsConfiguration | null> => {
+    try {
+      const res = await axios.get<GetContextConfigurationResponse>(
+        `${config.apiUrl}/learner/configuration?PHPSESSID=${config.sessionId}`
+      );
+      return res.data.data || null;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
 
 export const getCourseAlerts = async (): Promise<TemplateAlert[]> => {
   try {
@@ -117,6 +134,18 @@ export const getLearnerAwards = async (): Promise<LearnerAward[]> => {
   try {
     const res = await axios.get<GetLearnerAwardResponse>(
       `${config.apiUrl}/learner/received?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const getSentAwards = async (): Promise<SentAward[]> => {
+  try {
+    const res = await axios.get<GetSentAwardsResponse>(
+      `${config.apiUrl}/learner/sent?PHPSESSID=${config.sessionId}`
     );
     return res.data.data || [];
   } catch (e) {
