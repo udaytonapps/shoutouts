@@ -5,22 +5,25 @@ import TabPanel from "../components/common/TabPanel";
 import { a11yProps, compareLastNames } from "../utils/common/helpers";
 import {
   AwardsConfiguration,
+  LeaderboardLeader,
   LearnerAward,
   RequestStatus,
   SentAward,
 } from "../utils/types";
 import HistoryTable from "./HistoryTable";
+import LeaderboardTable from "./LeaderboardTable";
 import ReviewDialog from "./ReviewDialog";
 
 interface LearnerDashboardProps {
   configuration: AwardsConfiguration;
   learnerAwards: LearnerAward[];
   sentAwards: SentAward[];
+  leaders: LeaderboardLeader[];
   loading: boolean;
 }
 
 export default function LearnerDashboard(props: LearnerDashboardProps) {
-  const { configuration, learnerAwards, sentAwards, loading } = props;
+  const { configuration, learnerAwards, sentAwards, loading, leaders } = props;
   const [tabPosition, setTabPosition] = useState(0);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [awardToReview, setAwardToReview] = useState<SentAward>();
@@ -94,26 +97,34 @@ export default function LearnerDashboard(props: LearnerDashboardProps) {
               </Box>
             )}
             {tab === "SENT" && (
-              // <>
-              //   <HistoryTable
-              //     configuration={configuration}
-              //     rows={sentAwards}
-              //     loading={loading}
-              //     filters={tableFilters}
-              //     openReviewDialog={handleOpenReviewDialogFromHistory}
-              //   />
-              // </>
+              <>
+                <HistoryTable
+                  configuration={configuration}
+                  rows={sentAwards}
+                  loading={loading}
+                  filters={tableFilters}
+                  openReviewDialog={handleOpenReviewDialogFromHistory}
+                />
+              </>
             )}
-            {tab === "LEADERBOARD" && <>{tab} TAB CONTENT HERE</>}
+            {tab === "LEADERBOARD" && (
+              <>
+                {/* <LeaderboardTable
+                  configuration={configuration}
+                  rows={leaders}
+                  loading={loading}
+                /> */}
+              </>
+            )}
           </TabPanel>
         );
       })}
-      {/* <ReviewDialog
+      <ReviewDialog
         handleClose={handleCloseReviewDialog}
         handleSave={() => {}}
         open={reviewDialogOpen}
         requestRow={awardToReview || null}
-      /> */}
+      />
     </>
   );
 }
