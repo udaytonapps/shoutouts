@@ -121,8 +121,18 @@ $DATABASE_UPGRADE = function ($oldversion) {
         $sql = "INSERT INTO {$AWARDS_TYPE_TABLE_NAME} 
                     (image_url, label, short_description)
                 VALUES
-                    ('/assets/team-player.jpg', 'Team Player', 'You''ve been sent recognition for contributing as a great team player!'),
-                    ('/assets/creative.jpg', 'Creative', 'You''ve been sent recognition for your creativity!')";
+                    ('/assets/cool_collaborator.png', 'Cool Collaborator', 'You’re a helpful person who makes sure everything is getting done and people have what they need. Keep it up!'),
+                    ('/assets/legendary_leader.png', 'Legendary Leader', 'You organize. You plan. You find success. Way to take initiative!'),
+                    ('/assets/resourceful_reporter.png', 'Resourceful Reporter', 'No one takes notes and summarizes work like you. Your hard work is appreciated!'),
+                    ('/assets/placeholder.png', 'Prodigious Presenter', 'Did you just present at TEDx? That’s how good your presentation was. Awesome stuff!'),
+                    ('/assets/placeholder.png', 'Terrific Techy', 'Google’s got nothing on your tech skills. Where would we be without you?'),
+                    ('/assets/placeholder.png', 'Impressive Includer', 'You engage everyone and make folks feel comfortable. I appreciate you!'),
+                    ('/assets/placeholder.png', 'Rigorous Researcher', 'Finding information can be tough, but somehow you manage. Awesome!'),
+                    ('/assets/placeholder.png', 'Dynamic Dialoguer', 'You keep the conversation going with your insightful comments. Can’t wait to hear more!'),
+                    ('/assets/placeholder.png', 'Idea Inventor', 'It all starts with an idea, and you have ‘em. Keep your ideas coming!'),
+                    ('/assets/placeholder.png', 'Fabulous Flyer', 'You make UD and our classroom community special. Thanks for everything!'),
+                    ('/assets/placeholder.png', 'Huge High-Five', 'It’s a high-five. That’s the badge.'),
+                    ('/assets/placeholder.png', 'Marvelous Marianist', 'Faith, Mary, Community, Mission, and Inclusivity - you model these Marianist principles to your peers. Thank you!')";
         echo ("Upgrading: " . $sql . "<br/>\n");
         error_log("Upgrading: " . $sql);
         $q = $PDOX->queryDie($sql);
