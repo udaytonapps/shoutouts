@@ -1,12 +1,5 @@
-import { MoreHoriz, WorkspacePremium } from "@mui/icons-material";
-import {
-  Box,
-  Card,
-  CardContent,
-  CardHeader,
-  IconButton,
-  Typography,
-} from "@mui/material";
+import { WorkspacePremium } from "@mui/icons-material";
+import { Box, Card, CardContent, CardHeader, Typography } from "@mui/material";
 import { LearnerAward } from "../utils/types";
 
 interface AwardPanelProps {
@@ -17,14 +10,14 @@ interface AwardPanelProps {
 export default function AwardPanel(props: AwardPanelProps) {
   const { award } = props;
   return (
-    <Card>
+    <Card raised={true}>
       <CardHeader
         avatar={<WorkspacePremium fontSize="large" />}
-        action={
-          <IconButton aria-label="settings">
-            <MoreHoriz />
-          </IconButton>
-        }
+        // action={
+        //   <IconButton aria-label="settings">
+        //     <MoreHoriz />
+        //   </IconButton>
+        // }
         title={<Typography fontWeight={"bold"}>{award.label}</Typography>}
       />
       <CardContent>
