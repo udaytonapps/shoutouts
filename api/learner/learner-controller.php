@@ -129,7 +129,7 @@ class LearnerCtr
         } else {
             // If no roster, just return the list of Tsugi learners
             foreach ($tsugiUsers as $tsugiUser) {
-                if ($tsugiUser['user_id'] != self::$user->id) {
+                if ($tsugiUser['user_id'] != self::$user->id && isset($tsugiUser['displayname'])) {
                     $names = explode(" ", $tsugiUser['displayname']);
                     if (count($names) > 1) {
                         $familyName = array_pop($names);
