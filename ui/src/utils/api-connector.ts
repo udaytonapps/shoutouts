@@ -17,6 +17,8 @@ import {
   GetContextConfigurationResponse,
   SentAward,
   GetSentAwardsResponse,
+  LeaderboardLeader,
+  GetLeaderboardResponse,
 } from "./types";
 
 const config = EnvConfig[getEnvironment()];
@@ -146,6 +148,18 @@ export const getSentAwards = async (): Promise<SentAward[]> => {
   try {
     const res = await axios.get<GetSentAwardsResponse>(
       `${config.apiUrl}/learner/sent?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const getLeaderboard = async (): Promise<LeaderboardLeader[]> => {
+  try {
+    const res = await axios.get<GetLeaderboardResponse>(
+      `${config.apiUrl}/learner/leaderboard?PHPSESSID=${config.sessionId}`
     );
     return res.data.data || [];
   } catch (e) {

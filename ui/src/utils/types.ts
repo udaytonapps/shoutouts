@@ -52,6 +52,13 @@ export interface SentAward extends LearnerAward {
   updatedAt: string;
 }
 
+export interface LeaderboardLeader {
+  awards: LearnerAward[];
+  userId: string;
+  givenName?: string;
+  familyName?: string;
+}
+
 export interface AwardType {
   id: string;
   label: string;
@@ -92,6 +99,9 @@ export interface GetLearnerAwardResponse extends ApiResponse {
 }
 export interface GetSentAwardsResponse extends ApiResponse {
   data: SentAward[];
+}
+export interface GetLeaderboardResponse extends ApiResponse {
+  data: LeaderboardLeader[];
 }
 export interface GetPotentialAwardResponse extends ApiResponse {
   data: AwardType[];
