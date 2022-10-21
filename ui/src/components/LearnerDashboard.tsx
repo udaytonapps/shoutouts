@@ -11,7 +11,7 @@ import {
   SentAward,
 } from "../utils/types";
 import HistoryTable from "./HistoryTable";
-import LeaderboardTable from "./LeaderboardTable";
+// import LeaderboardTable from "./LeaderboardTable";
 import ReviewDialog from "./ReviewDialog";
 
 interface LearnerDashboardProps {
