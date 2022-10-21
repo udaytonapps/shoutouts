@@ -58,7 +58,7 @@ class LearnerDAO
 
     // AWARDS
 
-    public function getConfiguration($contextId)
+    public function getContextConfiguration($contextId)
     {
         $query = "SELECT * FROM {$this->awardConfigurationTable}
         WHERE context_id = :contextId;";
@@ -67,10 +67,10 @@ class LearnerDAO
     }
 
     /** Adds an award instance */
-    public function addAward($contextId, $linkId, $senderId, $recipientId, $awardTypeId, $commentText, $autoApproved)
+    public function addAward($contextId, $linkId, $senderId, $recipientId, $awardTypeId, $commentText, $awardStatus)
     {
-        $query = "INSERT INTO {$this->awardInstanceTable} (context_id, link_id, sender_id, recipient_id, award_type_id, comment_message, approved)
-        VALUES (:contextId, :linkId, :senderId, :recipientId, :awardTypeId, :commentText, :autoApproved);";
+        $query = "INSERT INTO {$this->awardInstanceTable} (context_id, link_id, sender_id, recipient_id, award_type_id, comment_message, award_status)
+        VALUES (:contextId, :linkId, :senderId, :recipientId, :awardTypeId, :commentText, :awardStatus);";
         $arr = array(
             ':contextId' => $contextId,
             ':linkId' => $linkId,
@@ -78,7 +78,7 @@ class LearnerDAO
             ':recipientId' => $recipientId,
             ':awardTypeId' => $awardTypeId,
             ':commentText' => $commentText,
-            ':autoApproved' => $autoApproved,
+            ':awardStatus' => $awardStatus,
         );
         $this->PDOX->queryDie($query, $arr);
         return $this->PDOX->lastInsertId();
@@ -118,7 +118,30 @@ class LearnerDAO
             ON atype.award_type_id = ai.award_type_id
         INNER JOIN {$this->p}lti_user u
             ON ai.recipient_id = u.user_id
-        WHERE ai.recipient_id = :userId AND ai.context_id = :contextId AND ai.approved = 1 ORDER BY ai.created_at DESC;";
+        WHERE ai.recipient_id = :userId AND ai.context_id = :contextId AND ai.award_status = 'ACCEPTED' ORDER BY ai.created_at DESC;";
+        $arr = array(':userId' => $userId, ':contextId' => $contextId);
+        return $this->PDOX->allRowsDie($query, $arr);
+    }
+
+    /** Retrieves sent awards for a given context (course) */
+    public function getSentCourseAwards($userId, $contextId)
+    {
+        // These are being aliased to camelCase - may or may not be really necessary
+        $query = "SELECT    ai.award_instance_id as `id`,
+                            ai.comment_message as `comment`,
+                            ai.created_at as `createdAt`,
+                            ai.updated_at as `updatedAt`,
+                            ai.award_status as `status`,
+                            u.displayName as `recipientName`,
+                            atype.image_url as imageUrl,
+                            atype.label as label,
+                            atype.short_description as 'description'
+                FROM {$this->awardInstanceTable} ai
+        INNER JOIN {$this->awardTypeTable} atype
+            ON atype.award_type_id = ai.award_type_id
+        INNER JOIN {$this->p}lti_user u
+            ON ai.recipient_id = u.user_id
+        WHERE ai.sender_id = :userId AND ai.context_id = :contextId ORDER BY ai.created_at DESC;";
         $arr = array(':userId' => $userId, ':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
     }

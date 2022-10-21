@@ -30,7 +30,6 @@ export default function SelectionForm(props: SelectionFormProps) {
     formState: { errors },
     handleSubmit,
     register,
-    reset,
   } = useForm<CommentForm>({
     defaultValues: {
       text: "",

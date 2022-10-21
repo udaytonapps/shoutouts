@@ -16,13 +16,20 @@ const CardContentLessPadding = styled(CardContent)(`
 export default function AwardOption(props: AwardOptionProps) {
   const { award } = props;
   return (
-    <Card>
+    <Card sx={{ width: 200 }}>
       <CardContentLessPadding>
-        <Box display={"flex"} flexDirection={"column"} alignItems={"center"}>
-          <AwardImage label={award.label} url={award.imageUrl} />
-          <Typography pt={1} textAlign={"center"}>
-            {award.label}
-          </Typography>
+        <Box
+          display={"flex"}
+          flexDirection={"column"}
+          alignItems={"center"}
+          height={176}
+        >
+          <AwardImage label={award.label} url={award.imageUrl} pixels={125} />
+          <Box display={"flex"} height={"100%"} alignItems={"center"}>
+            <Typography pt={1} textAlign={"center"}>
+              {award.label}
+            </Typography>
+          </Box>
         </Box>
       </CardContentLessPadding>
     </Card>

@@ -2,22 +2,54 @@ import { Box, Tab, Tabs, Typography } from "@mui/material";
 import { useState } from "react";
 import AwardPanel from "../components/AwardPanel";
 import TabPanel from "../components/common/TabPanel";
-import { a11yProps } from "../utils/common/helpers";
-import { LearnerAward } from "../utils/types";
+import { a11yProps, compareLastNames } from "../utils/common/helpers";
+import {
+  AwardsConfiguration,
+  LeaderboardLeader,
+  LearnerAward,
+  RequestStatus,
+  SentAward,
+} from "../utils/types";
+import HistoryTable from "./HistoryTable";
+import LeaderboardTable from "./LeaderboardTable";
+import ReviewDialog from "./ReviewDialog";
 
 interface LearnerDashboardProps {
+  configuration: AwardsConfiguration;
   learnerAwards: LearnerAward[];
+  sentAwards: SentAward[];
+  leaders: LeaderboardLeader[];
+  loading: boolean;
 }
 
-const tabs = ["RECEIVED", "SENT", "LEADERBOARD"] as const;
-
 export default function LearnerDashboard(props: LearnerDashboardProps) {
-  const { learnerAwards } = props;
+  const { configuration, learnerAwards, sentAwards, loading, leaders } = props;
   const [tabPosition, setTabPosition] = useState(0);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [awardToReview, setAwardToReview] = useState<SentAward>();
+
+  const tabs = ["RECEIVED", "SENT"];
+  if (configuration.leaderboard_enabled) {
+    tabs.push("LEADERBOARD");
+  }
 
   // Tab management
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabPosition(newValue);
+  };
+
+  // Dialog management
+  const handleOpenReviewDialogFromHistory = (reviewId: string) => {
+    setAwardToReview(sentAwards.find((award) => award.id === reviewId));
+    setReviewDialogOpen(true);
+  };
+
+  const handleCloseReviewDialog = (event?: object, reason?: string) => {
+    const reasonsToStayOpen = ["backdropClick", "escapeKeyDown"];
+    if (reason && reasonsToStayOpen.includes(reason)) {
+      return;
+    }
+    setReviewDialogOpen(false);
   };
 
   return (
@@ -59,16 +91,67 @@ export default function LearnerDashboard(props: LearnerDashboardProps) {
                     p={1}
                     sx={{ maxWidth: 600, width: "100%" }}
                   >
-                    <AwardPanel award={award} />
+                    <AwardPanel award={award} configuration={configuration} />
                   </Box>
                 ))}
               </Box>
             )}
-            {tab === "SENT" && <>{tab} TAB CONTENT HERE</>}
-            {tab === "LEADERBOARD" && <>{tab} TAB CONTENT HERE</>}
+            {tab === "SENT" && (
+              <>
+                <HistoryTable
+                  configuration={configuration}
+                  rows={sentAwards}
+                  loading={loading}
+                  filters={tableFilters}
+                  openReviewDialog={handleOpenReviewDialogFromHistory}
+                />
+              </>
+            )}
+            {tab === "LEADERBOARD" && (
+              <>
+                {/* <LeaderboardTable
+                  configuration={configuration}
+                  rows={leaders}
+                  loading={loading}
+                /> */}
+              </>
+            )}
           </TabPanel>
         );
       })}
+      <ReviewDialog
+        configuration={configuration}
+        handleClose={handleCloseReviewDialog}
+        handleSave={() => {}}
+        open={reviewDialogOpen}
+        requestRow={awardToReview || null}
+      />
     </>
   );
 }
+
+const tableFilters = [
+  {
+    column: "recipientName",
+    label: "Recipient Name",
+    type: "enum",
+    sort: compareLastNames,
+  },
+  {
+    column: "label",
+    label: "Award Type",
+    type: "enum",
+  },
+  {
+    column: "status",
+    label: "Status",
+    type: "enum",
+    valueMapping: (val: RequestStatus) => {
+      if (val === "SUBMITTED") {
+        return "Pending";
+      } else {
+        return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+      }
+    },
+  },
+];

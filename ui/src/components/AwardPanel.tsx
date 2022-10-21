@@ -1,30 +1,24 @@
-import { MoreHoriz, WorkspacePremium } from "@mui/icons-material";
-import {
-  Box,
-  Card,
-  CardContent,
-  CardHeader,
-  IconButton,
-  Typography,
-} from "@mui/material";
-import { LearnerAward } from "../utils/types";
+import { WorkspacePremium } from "@mui/icons-material";
+import { Box, Card, CardContent, CardHeader, Typography } from "@mui/material";
+import { AwardsConfiguration, LearnerAward } from "../utils/types";
 
 interface AwardPanelProps {
   award: LearnerAward;
+  configuration: AwardsConfiguration;
 }
 
 /** Show basic AwardPanel info */
 export default function AwardPanel(props: AwardPanelProps) {
-  const { award } = props;
+  const { award, configuration } = props;
   return (
-    <Card>
+    <Card raised={true}>
       <CardHeader
         avatar={<WorkspacePremium fontSize="large" />}
-        action={
-          <IconButton aria-label="settings">
-            <MoreHoriz />
-          </IconButton>
-        }
+        // action={
+        //   <IconButton aria-label="settings">
+        //     <MoreHoriz />
+        //   </IconButton>
+        // }
         title={<Typography fontWeight={"bold"}>{award.label}</Typography>}
       />
       <CardContent>
@@ -45,9 +39,14 @@ export default function AwardPanel(props: AwardPanelProps) {
             justifyContent={"space-around"}
           >
             <Typography>{award.description}</Typography>
-            <Typography variant="body2" fontStyle={"italic"}>
-              {award.comment}
-            </Typography>
+            <Box>
+              <Typography variant="body2" fontStyle={"italic"}>
+                {award.comment}
+              </Typography>
+              {!configuration.anonymous_enabled && (
+                <Typography variant="caption">- {award.senderName}</Typography>
+              )}
+            </Box>
           </Box>
         </Box>
       </CardContent>

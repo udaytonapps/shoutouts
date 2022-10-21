@@ -44,30 +44,62 @@ class LearnerCtr
 
     // AWARDS
 
+    static function getContextConfiguration()
+    {
+        $config = self::$DAO->getContextConfiguration(self::$contextId);
+        // Required
+        $config['anonymous_enabled'] = $config['anonymous_enabled'] ? true : false;
+        $config['comments_required'] = $config['comments_required'] ? true : false;
+        $config['leaderboard_enabled'] = $config['leaderboard_enabled'] ? true : false;
+        $config['moderation_enabled'] = $config['moderation_enabled'] ? true : false;
+        $config['notifications_enabled'] = $config['notifications_enabled'] ? true : false;
+        $config['recipient_view_enabled'] = $config['recipient_view_enabled'] ? true : false;
+        // Optional
+        // awarded_cooldown null
+        // awarded_limit null
+        // awarded_value "1"
+        // received_cooldown null
+        // received_limit null
+        // received_value "2"
+        return $config;
+    }
+
     /** Add an award for a learner */
     static function addAward($data)
     {
         // Check config to see if moderation is required. If so, auto-moderation should be false
-        $config = self::$DAO->getConfiguration(self::$contextId);
-        if (isset($config['moderation_enabled']) && $config['moderation_enabled'] == 1) {
-            $autoApproved = 0;
+        $config = self::$DAO->getContextConfiguration(self::$contextId);
+        if ($config['moderation_enabled'] == 1) {
+            $awardStatus = "SUBMITTED";
         } else {
-            $autoApproved = 1;
+            $awardStatus = "ACCEPTED";
         }
-        return self::$DAO->addAward(self::$contextId, self::$linkId, self::$user->id, $data['recipientId'], $data['awardTypeId'], $data['comment'], $autoApproved);
+        return self::$DAO->addAward(self::$contextId, self::$linkId, self::$user->id, $data['recipientId'], $data['awardTypeId'], $data['comment'], $awardStatus);
     }
 
     /** Get received awards */
     static function getReceivedApprovedCourseAwards()
     {
-        // Instructor can call learner DAO, but not the other way around
         return self::$DAO->getReceivedApprovedCourseAwards(self::$user->id, self::$contextId);
+    }
+
+    /** Get sent awards */
+    static function getSentCourseAwards()
+    {
+        $sentAwards = self::$DAO->getSentCourseAwards(self::$user->id, self::$contextId);
+        foreach ($sentAwards as &$award) {
+            if (isset($award['approved']) && $award['approved'] == 0) {
+                $award['approved'] = false;
+            } else {
+                $award['approved'] = true;
+            }
+        }
+        return $sentAwards;
     }
 
     /** Get enabled award types */
     static function getEnabledAwardTypes()
     {
-        // Instructor can call learner DAO, but not the other way around
         return self::$DAO->getEnabledAwardTypes(self::$contextId);
     }
 
@@ -97,7 +129,7 @@ class LearnerCtr
         } else {
             // If no roster, just return the list of Tsugi learners
             foreach ($tsugiUsers as $tsugiUser) {
-                if ($tsugiUser['user_id'] != self::$user->id) {
+                if ($tsugiUser['user_id'] != self::$user->id && isset($tsugiUser['displayname'])) {
                     $names = explode(" ", $tsugiUser['displayname']);
                     if (count($names) > 1) {
                         $familyName = array_pop($names);

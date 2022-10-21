@@ -25,7 +25,7 @@ export default function SelectAward(props: SelectAwardProps) {
         flexWrap={"wrap"}
       >
         {awards.map((award, i) => (
-          <Box key={`recipient-${i}`} p={0.1}>
+          <Box key={`recipient-${i}`} p={0.1} display={"flex"}>
             <ButtonBase onClick={() => setSelectedAward(award)}>
               <AwardOption award={award} />
             </ButtonBase>
