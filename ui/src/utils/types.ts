@@ -40,9 +40,11 @@ export interface AwardsConfiguration {
 export interface LearnerAward {
   id: string;
   comment: string;
-  label: string;
+  createdAt: string;
   description: string;
   imageUrl: string;
+  label: string;
+  senderName?: string;
 }
 
 export interface SentAward extends LearnerAward {

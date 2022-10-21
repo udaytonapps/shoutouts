@@ -33,7 +33,7 @@ export default function SelectionConfirm(props: SelectionConfirmProps) {
         sx={{ maxWidth: 600, width: "100%" }}
         flexDirection={"column"}
       >
-        <AwardPanel award={sentAward} />
+        <AwardPanel award={sentAward} configuration={configuration} />
         <Box pt={4} display={"flex"} justifyContent={"center"}>
           <Typography sx={{ maxWidth: 300 }}>{message}</Typography>
         </Box>

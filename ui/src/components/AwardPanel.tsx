@@ -1,14 +1,15 @@
 import { WorkspacePremium } from "@mui/icons-material";
 import { Box, Card, CardContent, CardHeader, Typography } from "@mui/material";
-import { LearnerAward } from "../utils/types";
+import { AwardsConfiguration, LearnerAward } from "../utils/types";
 
 interface AwardPanelProps {
   award: LearnerAward;
+  configuration: AwardsConfiguration;
 }
 
 /** Show basic AwardPanel info */
 export default function AwardPanel(props: AwardPanelProps) {
-  const { award } = props;
+  const { award, configuration } = props;
   return (
     <Card raised={true}>
       <CardHeader
@@ -38,9 +39,14 @@ export default function AwardPanel(props: AwardPanelProps) {
             justifyContent={"space-around"}
           >
             <Typography>{award.description}</Typography>
-            <Typography variant="body2" fontStyle={"italic"}>
-              {award.comment}
-            </Typography>
+            <Box>
+              <Typography variant="body2" fontStyle={"italic"}>
+                {award.comment}
+              </Typography>
+              {!configuration.anonymous_enabled && (
+                <Typography variant="caption">- {award.senderName}</Typography>
+              )}
+            </Box>
           </Box>
         </Box>
       </CardContent>

@@ -18,6 +18,7 @@ import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { AppContext } from "../utils/common/context";
 import { formatDbDate } from "../utils/common/helpers";
 import {
+  AwardsConfiguration,
   AwardStatusUpdateData,
   HistoryTableRow,
   RequestStatus,
@@ -26,6 +27,7 @@ import AwardPanel from "./AwardPanel";
 import StatusName from "./common/StatusName";
 
 interface ReviewDialogProps {
+  configuration: AwardsConfiguration;
   handleClose: (event?: object, reason?: string) => void;
   handleSave: (submission: AwardStatusUpdateData) => void;
   open: boolean;
@@ -34,7 +36,7 @@ interface ReviewDialogProps {
 
 /** Show settings form */
 function ReviewDialog(props: ReviewDialogProps) {
-  const { handleClose, handleSave, open, requestRow } = props;
+  const { configuration, handleClose, handleSave, open, requestRow } = props;
   const appInfo = useContext(AppContext);
 
   const [actionStatus, setActionStatus] = useState<RequestStatus>();
@@ -117,7 +119,7 @@ function ReviewDialog(props: ReviewDialogProps) {
               </Box>
               {/* REQUEST TYPE */}
               <Box p={1} mb={2} sx={{ maxWidth: 600, width: "100%" }}>
-                <AwardPanel award={requestRow} />
+                <AwardPanel award={requestRow} configuration={configuration} />
               </Box>
               {/* INSTRUCTOR ACTION CHOICE */}
               {readonly ? (

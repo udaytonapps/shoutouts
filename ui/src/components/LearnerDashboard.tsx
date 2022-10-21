@@ -91,7 +91,7 @@ export default function LearnerDashboard(props: LearnerDashboardProps) {
                     p={1}
                     sx={{ maxWidth: 600, width: "100%" }}
                   >
-                    <AwardPanel award={award} />
+                    <AwardPanel award={award} configuration={configuration} />
                   </Box>
                 ))}
               </Box>
@@ -120,6 +120,7 @@ export default function LearnerDashboard(props: LearnerDashboardProps) {
         );
       })}
       <ReviewDialog
+        configuration={configuration}
         handleClose={handleCloseReviewDialog}
         handleSave={() => {}}
         open={reviewDialogOpen}

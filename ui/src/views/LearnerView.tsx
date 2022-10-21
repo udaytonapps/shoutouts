@@ -1,6 +1,6 @@
 import { WorkspacePremium } from "@mui/icons-material";
 import { Alert, Box, Button, CircularProgress } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import BackNavigation from "../components/common/BackNavigation";
 import LearnerDashboard from "../components/LearnerDashboard";
 import SelectAward from "../components/SelectAward";
@@ -44,43 +44,15 @@ function LearnerView() {
   const [selectedRecipient, setSelectedRecipient] = useState<Recipient>();
   const [selectedAward, setSelectedAward] = useState<AwardType>();
   const [comment, setComment] = useState<string>("");
-
   const [stage, setStage] = useState<SendStage>();
-
-  const refreshDashboard = useCallback(async () => {
-    const fetchLearnerAwards = async () => {
-      const awards = await getLearnerAwards();
-      setLearnerAwards(awards);
-    };
-
-    const fetchSentAwards = async () => {
-      const awards = await getSentAwards();
-      setSentAwards(awards);
-    };
-
-    const fetchLeaderboard = async () => {
-      if (configuration?.leaderboard_enabled) {
-        const leaders = await getLeaderboard();
-        leaders.forEach((leader) => {
-          leader.awards.sort((a, b) => {
-            return a.label.localeCompare(b.label);
-          });
-        });
-        setLeaders(leaders);
-      }
-    };
-    await Promise.allSettled([
-      fetchLearnerAwards(),
-      fetchSentAwards(),
-      // fetchLeaderboard(),
-    ]);
-  }, [configuration]);
 
   useEffect(() => {
     // Retrieve the list of alerts to display
     fetchConfiguration().then(() => {
       Promise.allSettled([
-        refreshDashboard(),
+        fetchLearnerAwards(),
+        fetchSentAwards(),
+        // fetchLeaderboard(),
         fetchRecipients(),
         fetchPotentialAwards(),
       ]).then(() => {
@@ -89,7 +61,7 @@ function LearnerView() {
     });
 
     // The empty dependency array '[]' means this will run once, when the component renders
-  }, [refreshDashboard]);
+  }, []);
 
   useEffect(() => {
     if (selectedRecipient) {
@@ -109,6 +81,28 @@ function LearnerView() {
     const config = await getContextConfiguration();
     if (config) {
       setConfiguration(config);
+    }
+  };
+
+  const fetchLearnerAwards = async () => {
+    const awards = await getLearnerAwards();
+    setLearnerAwards(awards);
+  };
+
+  const fetchSentAwards = async () => {
+    const awards = await getSentAwards();
+    setSentAwards(awards);
+  };
+
+  const fetchLeaderboard = async () => {
+    if (configuration?.leaderboard_enabled) {
+      const leaders = await getLeaderboard();
+      leaders.forEach((leader) => {
+        leader.awards.sort((a, b) => {
+          return a.label.localeCompare(b.label);
+        });
+      });
+      setLeaders(leaders);
     }
   };
 
@@ -229,6 +223,7 @@ function LearnerView() {
           if (selectedAward && selectedRecipient) {
             const sentAward: LearnerAward = {
               id: "",
+              createdAt: "",
               comment,
               label: selectedAward.label,
               description: selectedAward.description,
@@ -257,7 +252,11 @@ function LearnerView() {
                       setSelectedRecipient(undefined);
                       setComment("");
                       setLoading(true);
-                      refreshDashboard().then(() => {
+                      Promise.allSettled([
+                        fetchLearnerAwards(),
+                        fetchSentAwards(),
+                        // fetchLeaderboard(),
+                      ]).then(() => {
                         setLoading(false);
                       });
                     }}
