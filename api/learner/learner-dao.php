@@ -112,7 +112,8 @@ class LearnerDAO
                             ai.created_at as `createdAt`,
                             atype.image_url as imageUrl,
                             atype.label as label,
-                            atype.short_description as 'description'
+                            atype.short_description as 'description',
+                            (SELECT displayname FROM {$this->p}lti_user WHERE user_id = ai.sender_id) as `senderName`
                 FROM {$this->awardInstanceTable} ai
         INNER JOIN {$this->awardTypeTable} atype
             ON atype.award_type_id = ai.award_type_id
@@ -143,6 +144,26 @@ class LearnerDAO
             ON ai.recipient_id = u.user_id
         WHERE ai.sender_id = :userId AND ai.context_id = :contextId ORDER BY ai.created_at DESC;";
         $arr = array(':userId' => $userId, ':contextId' => $contextId);
+        return $this->PDOX->allRowsDie($query, $arr);
+    }
+
+    /** Retrieves the leaderboard for the given context */
+    public function getLeaderboardLeaders($contextId, $limit)
+    {
+        // These are being aliased to camelCase - may or may not be really necessary
+        $query = "SELECT DISTINCT u.user_id as `userId`,
+                            u.displayname as `displayname`,
+                            (SELECT COUNT(*) 
+                                FROM  {$this->awardInstanceTable} iai
+                                WHERE iai.context_id = :contextId
+                                    AND u.user_id = iai.recipient_id
+                                    AND iai.award_status = 'ACCEPTED'
+                            ) as `count`
+        FROM {$this->p}lti_user u
+        INNER JOIN {$this->awardInstanceTable} ai
+            ON ai.recipient_id = u.user_id
+        WHERE ai.context_id = :contextId AND ai.award_status = 'ACCEPTED' ORDER BY `count` DESC LIMIT {$limit}";
+        $arr = array(':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
     }
 }

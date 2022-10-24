@@ -1,6 +1,6 @@
 import { WorkspacePremium } from "@mui/icons-material";
 import { Alert, Box, Button, CircularProgress } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import BackNavigation from "../components/common/BackNavigation";
 import LearnerDashboard from "../components/LearnerDashboard";
 import SelectAward from "../components/SelectAward";
@@ -46,22 +46,33 @@ function LearnerView() {
   const [comment, setComment] = useState<string>("");
   const [stage, setStage] = useState<SendStage>();
 
+  const getTabPromises = useCallback((config: AwardsConfiguration) => {
+    const promises = [fetchLearnerAwards(), fetchSentAwards()];
+    if (config.leaderboard_enabled) {
+      promises.push(fetchLeaderboard());
+    }
+    return promises;
+  }, []);
+
   useEffect(() => {
     // Retrieve the list of alerts to display
-    fetchConfiguration().then(() => {
-      Promise.allSettled([
-        fetchLearnerAwards(),
-        fetchSentAwards(),
-        // fetchLeaderboard(),
-        fetchRecipients(),
-        fetchPotentialAwards(),
-      ]).then(() => {
-        setLoading(false);
-      });
+    getContextConfiguration().then((config) => {
+      if (config) {
+        setConfiguration(config);
+        // Assemble the promises to run them all in parallel
+        const promises = [
+          ...getTabPromises(config),
+          fetchRecipients(),
+          fetchPotentialAwards(),
+        ];
+        // Turn off loading once all promises are settled
+        return Promise.allSettled(promises).then(() => {
+          setLoading(false);
+        });
+      }
     });
-
     // The empty dependency array '[]' means this will run once, when the component renders
-  }, []);
+  }, [getTabPromises]);
 
   useEffect(() => {
     if (selectedRecipient) {
@@ -77,13 +88,6 @@ function LearnerView() {
     }
   }, [selectedAward]);
 
-  const fetchConfiguration = async () => {
-    const config = await getContextConfiguration();
-    if (config) {
-      setConfiguration(config);
-    }
-  };
-
   const fetchLearnerAwards = async () => {
     const awards = await getLearnerAwards();
     setLearnerAwards(awards);
@@ -95,15 +99,13 @@ function LearnerView() {
   };
 
   const fetchLeaderboard = async () => {
-    if (configuration?.leaderboard_enabled) {
-      const leaders = await getLeaderboard();
-      leaders.forEach((leader) => {
-        leader.awards.sort((a, b) => {
-          return a.label.localeCompare(b.label);
-        });
+    const leaders = await getLeaderboard();
+    leaders.forEach((leader) => {
+      leader.awards.sort((a, b) => {
+        return a.label.localeCompare(b.label);
       });
-      setLeaders(leaders);
-    }
+    });
+    setLeaders(leaders);
   };
 
   const fetchPotentialAwards = async () => {
@@ -130,6 +132,15 @@ function LearnerView() {
     }
   };
 
+  const refreshTabs = () => {
+    setLoading(true);
+    if (configuration) {
+      Promise.allSettled([getTabPromises(configuration)]).then(() => {
+        setLoading(false);
+      });
+    }
+  };
+
   const renderStage = () => {
     if (configuration) {
       switch (stage) {
@@ -148,6 +159,7 @@ function LearnerView() {
                 </Button>
               </Box>
               <LearnerDashboard
+                refreshTabs={refreshTabs}
                 configuration={configuration}
                 learnerAwards={learnerAwards}
                 sentAwards={sentAwards}
@@ -252,13 +264,7 @@ function LearnerView() {
                       setSelectedRecipient(undefined);
                       setComment("");
                       setLoading(true);
-                      Promise.allSettled([
-                        fetchLearnerAwards(),
-                        fetchSentAwards(),
-                        // fetchLeaderboard(),
-                      ]).then(() => {
-                        setLoading(false);
-                      });
+                      refreshTabs();
                     }}
                   >
                     Dismiss
