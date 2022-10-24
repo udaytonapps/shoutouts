@@ -20,10 +20,18 @@ interface LearnerDashboardProps {
   sentAwards: SentAward[];
   leaders: LeaderboardLeader[];
   loading: boolean;
+  refreshTabs: () => void;
 }
 
 export default function LearnerDashboard(props: LearnerDashboardProps) {
-  const { configuration, learnerAwards, sentAwards, loading, leaders } = props;
+  const {
+    configuration,
+    learnerAwards,
+    sentAwards,
+    loading,
+    leaders,
+    refreshTabs,
+  } = props;
   const [tabPosition, setTabPosition] = useState(0);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [awardToReview, setAwardToReview] = useState<SentAward>();
@@ -35,6 +43,7 @@ export default function LearnerDashboard(props: LearnerDashboardProps) {
 
   // Tab management
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    refreshTabs();
     setTabPosition(newValue);
   };
 
