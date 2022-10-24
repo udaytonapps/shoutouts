@@ -129,7 +129,7 @@ class LearnerCtr
         } else {
             // If no roster, just return the list of Tsugi learners
             foreach ($tsugiUsers as $tsugiUser) {
-                if ($tsugiUser['user_id'] != self::$user->id && isset($tsugiUser['displayname'])) {
+                if ($tsugiUser["role"] == 0 && $tsugiUser['user_id'] != self::$user->id && isset($tsugiUser['displayname'])) {
                     $names = explode(" ", $tsugiUser['displayname']);
                     if (count($names) > 1) {
                         $familyName = array_pop($names);
@@ -148,6 +148,36 @@ class LearnerCtr
             }
         }
         return $recipientList;
+    }
+
+    /** Get enabled award types */
+    static function getLeaderboard()
+    {
+        $config = self::getContextConfiguration();
+        if ($config['leaderboard_enabled']) {
+
+            // May want to configure leaderboard limit at some point - for now, 5
+            $limit = 5;
+
+            $leaders = self::$DAO->getLeaderboardLeaders(self::$contextId, $limit);
+            // Then loop over leaders and get their awards
+            foreach ($leaders as &$leader) {
+                if (!$config['anonymous_enabled']) {
+                    $names = explode(" ", $leader['displayname']);
+                    if (count($names) > 1) {
+                        $leader['familyName'] = array_pop($names);
+                        $leader['givenName'] = implode(" ", $names);
+                    } else {
+                        $leader['familyName'] = $leader['displayname'];
+                        $leader['givenName'] = "";
+                    }
+                }
+                $leader['awards'] = self::$DAO->getReceivedApprovedCourseAwards($leader['userId'], self::$contextId);
+            }
+            return $leaders;
+        } else {
+            return array();
+        }
     }
 }
 LearnerCtr::init();

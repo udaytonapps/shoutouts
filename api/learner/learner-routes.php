@@ -87,8 +87,8 @@ AppRouter::add($resource . '/awards', function () {
     }
 }, 'post');
 
-// /** READ Leaderboard Listing */
-// AppRouter::add($resource . '/leaderboard', function () {
-//     $res = LearnerCtr::getCourseComments();
-//     return AppRouter::sendJson($res);
-// }, 'get');
+/** READ Leaderboard Listing */
+AppRouter::add($resource . '/leaderboard', function () {
+    $res = LearnerCtr::getLeaderboard();
+    return AppRouter::sendJson($res);
+}, 'get');
