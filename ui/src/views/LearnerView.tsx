@@ -283,7 +283,6 @@ function LearnerView() {
           }
       }
     } else {
-      console.log(configuration, loading);
       if (loading) {
         return (
           <Box mt={2} display={"flex"} justifyContent={"center"}>
