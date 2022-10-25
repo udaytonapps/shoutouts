@@ -102,6 +102,9 @@ export default function LearnerDashboard(props: LearnerDashboardProps) {
                   p={3}
                   gap={3}
                 >
+                  {!learnerAwards.length && (
+                    <Typography>No Shout-Outs received yet!</Typography>
+                  )}
                   {assembleConsolidatedAwardData(learnerAwards).map(
                     (awardData, i) => (
                       <Box key={`award-${awardData.label}-${i}`}>
