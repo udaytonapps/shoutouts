@@ -47,20 +47,22 @@ class LearnerCtr
     static function getContextConfiguration()
     {
         $config = self::$DAO->getContextConfiguration(self::$contextId);
-        // Required
-        $config['anonymous_enabled'] = $config['anonymous_enabled'] ? true : false;
-        $config['comments_required'] = $config['comments_required'] ? true : false;
-        $config['leaderboard_enabled'] = $config['leaderboard_enabled'] ? true : false;
-        $config['moderation_enabled'] = $config['moderation_enabled'] ? true : false;
-        $config['notifications_enabled'] = $config['notifications_enabled'] ? true : false;
-        $config['recipient_view_enabled'] = $config['recipient_view_enabled'] ? true : false;
-        // Optional
-        // awarded_cooldown null
-        // awarded_limit null
-        // awarded_value "1"
-        // received_cooldown null
-        // received_limit null
-        // received_value "2"
+        if (isset($config) && isset($config['configuration_id'])) {
+            // Required
+            $config['anonymous_enabled'] = $config['anonymous_enabled'] ? true : false;
+            $config['comments_required'] = $config['comments_required'] ? true : false;
+            $config['leaderboard_enabled'] = $config['leaderboard_enabled'] ? true : false;
+            $config['moderation_enabled'] = $config['moderation_enabled'] ? true : false;
+            $config['notifications_enabled'] = $config['notifications_enabled'] ? true : false;
+            $config['recipient_view_enabled'] = $config['recipient_view_enabled'] ? true : false;
+            // Optional
+            // awarded_cooldown null
+            // awarded_limit null
+            // awarded_value "1"
+            // received_cooldown null
+            // received_limit null
+            // received_value "2"
+        }
         return $config;
     }
 
