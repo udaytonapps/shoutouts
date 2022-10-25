@@ -1,5 +1,6 @@
 import { WorkspacePremium } from "@mui/icons-material";
 import { Box, Card, CardContent, CardHeader, Typography } from "@mui/material";
+import { formatDbDate } from "../utils/common/helpers";
 import { AwardsConfiguration, LearnerAward } from "../utils/types";
 
 interface AwardPanelProps {
@@ -14,12 +15,14 @@ export default function AwardPanel(props: AwardPanelProps) {
     <Card raised={true}>
       <CardHeader
         avatar={<WorkspacePremium fontSize="large" />}
-        // action={
-        //   <IconButton aria-label="settings">
-        //     <MoreHoriz />
-        //   </IconButton>
-        // }
-        title={<Typography fontWeight={"bold"}>{award.label}</Typography>}
+        title={
+          <Box display={"flex"} justifyContent={"space-between"}>
+            <Typography fontWeight={"bold"}>{award.label}</Typography>
+            <Typography variant="caption">
+              {formatDbDate(award.createdAt)}
+            </Typography>
+          </Box>
+        }
       />
       <CardContent>
         <Box display={"flex"}>
@@ -41,7 +44,7 @@ export default function AwardPanel(props: AwardPanelProps) {
             <Typography>{award.description}</Typography>
             <Box>
               <Typography variant="body2" fontStyle={"italic"}>
-                {award.comment}
+                {!configuration.anonymous_enabled && award.comment}
               </Typography>
               {!configuration.anonymous_enabled && (
                 <Typography variant="caption">- {award.senderName}</Typography>
