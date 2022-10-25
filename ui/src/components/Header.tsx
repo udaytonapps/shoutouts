@@ -1,3 +1,4 @@
+import { Campaign } from "@mui/icons-material";
 import { Box, Typography } from "@mui/material";
 
 interface HeaderProps {}
@@ -6,7 +7,7 @@ interface HeaderProps {}
 function Header(props: HeaderProps) {
   return (
     <Box mt={6}>
-      <Typography variant="h3">Awards</Typography>
+      <Typography variant="h3">Shout-Out!</Typography>
     </Box>
   );
 }

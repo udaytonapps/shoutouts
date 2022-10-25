@@ -1,6 +1,6 @@
 import { WorkspacePremium } from "@mui/icons-material";
 import { Alert, Box, Button, CircularProgress } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import BackNavigation from "../components/common/BackNavigation";
 import LearnerDashboard from "../components/LearnerDashboard";
 import SelectAward from "../components/SelectAward";
@@ -16,6 +16,7 @@ import {
   getSentAwards,
   sendAward,
 } from "../utils/api-connector";
+import { AppContext } from "../utils/common/context";
 import {
   AwardsConfiguration,
   AwardType,
@@ -34,6 +35,7 @@ const sendStages = [
 ] as const;
 
 function LearnerView() {
+  const appConfig = useContext(AppContext);
   const [loading, setLoading] = useState(true);
   const [configuration, setConfiguration] = useState<AwardsConfiguration>();
   const [learnerAwards, setLearnerAwards] = useState<LearnerAward[]>([]);
@@ -155,7 +157,7 @@ function LearnerView() {
                   variant="contained"
                   onClick={handleClickSend}
                 >
-                  Send Kudos
+                  Send Shout-Out!
                 </Button>
               </Box>
               <LearnerDashboard
@@ -236,6 +238,7 @@ function LearnerView() {
             const sentAward: LearnerAward = {
               id: "",
               createdAt: "",
+              senderName: appConfig.username,
               comment,
               label: selectedAward.label,
               description: selectedAward.description,
