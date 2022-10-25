@@ -44,10 +44,8 @@ function ReviewDialog(props: ReviewDialogProps) {
   const [readonly, setReadonly] = useState<boolean>(true);
 
   useEffect(() => {
-    if (open) {
-      setActionStatus(undefined);
-      setComment(undefined);
-    }
+    setActionStatus(undefined);
+    setComment(undefined);
   }, [open]);
 
   useEffect(() => {
@@ -76,9 +74,6 @@ function ReviewDialog(props: ReviewDialogProps) {
 
   const handleActionChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newStatus = e.target.value as RequestStatus;
-    if (newStatus === "ACCEPTED") {
-      setComment("");
-    }
     setActionStatus(newStatus);
   };
 

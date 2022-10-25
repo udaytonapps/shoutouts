@@ -1,6 +1,6 @@
 import { Theme } from "@mui/material";
 import { DateTime, Duration } from "luxon";
-import { AppInfo, RequestStatus } from "../types";
+import { AppInfo, LearnerAward, RequestStatus } from "../types";
 import {
   APP_INFO_OVERRIDES,
   DB_DATE_TIME_FORMAT,
@@ -184,4 +184,21 @@ export const getStatusColors = (theme: Theme) => {
     SUBMITTED: theme.palette.warning.main,
   };
   return statusColors;
+};
+
+export const assembleConsolidatedAwardData = (awards: LearnerAward[]) => {
+  const consolidatedAwardData: {
+    [key: string]: { count: number; label: string; imageUrl: string };
+  } = {};
+  awards.forEach((award) => {
+    if (!consolidatedAwardData[award.label]) {
+      consolidatedAwardData[award.label] = {
+        count: 0,
+        label: award.label,
+        imageUrl: award.imageUrl,
+      };
+    }
+    consolidatedAwardData[award.label].count++;
+  });
+  return Object.values(consolidatedAwardData);
 };

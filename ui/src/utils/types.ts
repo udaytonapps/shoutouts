@@ -52,6 +52,11 @@ export interface SentAward extends LearnerAward {
   status: RequestStatus;
   createdAt: string;
   updatedAt: string;
+  moderationResponse?: string;
+}
+export interface PendingTableRow extends SentAward {
+  // Same as SentAward, but senderName is required
+  senderName: string;
 }
 
 export interface LeaderboardLeader {
@@ -59,7 +64,10 @@ export interface LeaderboardLeader {
   userId: string;
   givenName?: string;
   familyName?: string;
+  lastFirst?: string;
 }
+
+export interface AllAwardsTableRecord extends LeaderboardLeader {}
 
 export interface AwardType {
   id: string;
@@ -92,6 +100,15 @@ export interface GetContextConfigurationResponse extends ApiResponse {
 }
 export interface GetCourseAlertsResponse extends ApiResponse {
   data: TemplateAlert[];
+}
+export interface GetAllAwardsResponse extends ApiResponse {
+  data: AllAwardsTableRecord[];
+}
+export interface GetPendingAwardsResponse extends ApiResponse {
+  data: PendingTableRow[];
+}
+export interface GetHistoryResponse extends ApiResponse {
+  data: HistoryTableRow[];
 }
 export interface GetCourseCommentsResponse extends ApiResponse {
   data: TemplateComment[];
