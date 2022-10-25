@@ -71,6 +71,8 @@ function LearnerView() {
         return Promise.allSettled(promises).then(() => {
           setLoading(false);
         });
+      } else {
+        setLoading(false);
       }
     });
     // The empty dependency array '[]' means this will run once, when the component renders
@@ -281,6 +283,7 @@ function LearnerView() {
           }
       }
     } else {
+      console.log(configuration, loading);
       if (loading) {
         return (
           <Box mt={2} display={"flex"} justifyContent={"center"}>
