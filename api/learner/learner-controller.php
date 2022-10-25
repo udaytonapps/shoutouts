@@ -74,13 +74,35 @@ class LearnerCtr
         } else {
             $awardStatus = "ACCEPTED";
         }
-        return self::$DAO->addAward(self::$contextId, self::$linkId, self::$user->id, $data['recipientId'], $data['awardTypeId'], $data['comment'], $awardStatus);
+        $res = self::$DAO->addAward(self::$contextId, self::$linkId, self::$user->id, $data['recipientId'], $data['awardTypeId'], $data['comment'], $awardStatus);
+        if ($awardStatus == 'ACCEPTED') {
+            self::sendApprovalEmailToRecipient($data['recipientId'], $data['awardTypeId']);
+        }
+        return $res;
+    }
+
+    static function sendApprovalEmailToRecipient($recipientId, $typeId)
+    {
+        global $CONTEXT;
+        $subject = "You received an award in " . $CONTEXT->title;
+        $type = self::$DAO->getAwardType($typeId);
+        $recipient = self::$commonDAO->getUserContact($recipientId);
+        $instructorMsg = "Congrats! You received an award.\n\nCourse: {$CONTEXT->title}\nAward Type: {$type['label']}";
+        CommonService::sendEmailFromActiveUser($recipient['displayname'], $recipient['email'], $subject, $instructorMsg);
     }
 
     /** Get received awards */
     static function getReceivedApprovedCourseAwards()
     {
-        return self::$DAO->getReceivedApprovedCourseAwards(self::$user->id, self::$contextId);
+        $config = self::getContextConfiguration();
+        $res = self::$DAO->getReceivedApprovedCourseAwards(self::$user->id, self::$contextId);
+        if ($config['anonymous_enabled']) {
+            foreach ($res as &$award) {
+                $award['senderName'] = null;
+                $award['comment'] = null;
+            }
+        }
+        return $res;
     }
 
     /** Get sent awards */
@@ -92,6 +114,18 @@ class LearnerCtr
                 $award['approved'] = false;
             } else {
                 $award['approved'] = true;
+            }
+            $names = explode(" ", $award['senderName']);
+            if (count($names) > 1) {
+                $familyName = array_pop($names);
+                $givenName = implode(" ", $names);
+                $award['senderName'] = $familyName . ', ' . $givenName;
+            }
+            $names = explode(" ", $award['recipientName']);
+            if (count($names) > 1) {
+                $familyName = array_pop($names);
+                $givenName = implode(" ", $names);
+                $award['recipientName'] = $familyName . ', ' . $givenName;
             }
         }
         return $sentAwards;
@@ -155,11 +189,8 @@ class LearnerCtr
     {
         $config = self::getContextConfiguration();
         if ($config['leaderboard_enabled']) {
-
-            // May want to configure leaderboard limit at some point - for now, 5
-            $limit = 5;
-
-            $leaders = self::$DAO->getLeaderboardLeaders(self::$contextId, $limit);
+            // 5 for now, can be configurable if needed
+            $leaders = self::$DAO->getLeaderboardLeaders(self::$contextId, 5);
             // Then loop over leaders and get their awards
             foreach ($leaders as &$leader) {
                 if (!$config['anonymous_enabled']) {
@@ -167,6 +198,7 @@ class LearnerCtr
                     if (count($names) > 1) {
                         $leader['familyName'] = array_pop($names);
                         $leader['givenName'] = implode(" ", $names);
+                        $leader['lastFirst'] = $leader['familyName'] . ', ' . $leader['givenName'];
                     } else {
                         $leader['familyName'] = $leader['displayname'];
                         $leader['givenName'] = "";

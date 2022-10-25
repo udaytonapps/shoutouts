@@ -37,7 +37,7 @@ class LearnerDAO
     /** Adds a comment with multiple identifying IDs */
     public function addComment($userId, $contextId, $linkId, $commentText)
     {
-        $query = "INSERT INTO {$this->commentTable} (user_id, context_id, link_id, comment_message)
+        $query = "INSERT INTO {$this->commentTable} (user_id, context_id, link_id, sender_comment)
         VALUES (:userId, :contextId, :linkId, :commentText);";
         $arr = array(':userId' => $userId, ':contextId' => $contextId, ':linkId' => $linkId, ':commentText' => $commentText);
         $this->PDOX->queryDie($query, $arr);
@@ -48,7 +48,7 @@ class LearnerDAO
     public function getCourseComments($contextId)
     {
         // These are being aliased to camelCase - may or may not be really necessary
-        $query = "SELECT c.comment_id as `id`, c.comment_message as `text`, c.created_at as `createdAt`, u.displayname as learnerName FROM {$this->commentTable} c
+        $query = "SELECT c.comment_id as `id`, c.sender_comment as `text`, c.created_at as `createdAt`, u.displayname as learnerName FROM {$this->commentTable} c
         INNER JOIN {$this->p}lti_user u
             ON u.user_id = c.user_id
         WHERE c.context_id = :contextId ORDER BY c.created_at DESC;";
@@ -69,7 +69,7 @@ class LearnerDAO
     /** Adds an award instance */
     public function addAward($contextId, $linkId, $senderId, $recipientId, $awardTypeId, $commentText, $awardStatus)
     {
-        $query = "INSERT INTO {$this->awardInstanceTable} (context_id, link_id, sender_id, recipient_id, award_type_id, comment_message, award_status)
+        $query = "INSERT INTO {$this->awardInstanceTable} (context_id, link_id, sender_id, recipient_id, award_type_id, sender_comment, award_status)
         VALUES (:contextId, :linkId, :senderId, :recipientId, :awardTypeId, :commentText, :awardStatus);";
         $arr = array(
             ':contextId' => $contextId,
@@ -82,6 +82,14 @@ class LearnerDAO
         );
         $this->PDOX->queryDie($query, $arr);
         return $this->PDOX->lastInsertId();
+    }
+
+    public function getAwardType($typeId)
+    {
+        $query = "SELECT * FROM {$this->awardTypeTable}
+        WHERE award_type_id = :typeId";
+        $arr = array(':typeId' => $typeId);
+        return $this->PDOX->rowDie($query, $arr);
     }
 
     /** Retrieves a list of awards that are enabled for the given context (course) */
@@ -108,7 +116,7 @@ class LearnerDAO
     {
         // These are being aliased to camelCase - may or may not be really necessary
         $query = "SELECT    ai.award_instance_id as `id`,
-                            ai.comment_message as `comment`,
+                            ai.sender_comment as `comment`,
                             ai.created_at as `createdAt`,
                             atype.image_url as imageUrl,
                             atype.label as label,
@@ -129,10 +137,12 @@ class LearnerDAO
     {
         // These are being aliased to camelCase - may or may not be really necessary
         $query = "SELECT    ai.award_instance_id as `id`,
-                            ai.comment_message as `comment`,
+                            ai.sender_comment as `comment`,
+                            ai.moderation_comment as `instructorComment`,
                             ai.created_at as `createdAt`,
                             ai.updated_at as `updatedAt`,
                             ai.award_status as `status`,
+                            (SELECT displayname FROM {$this->p}lti_user WHERE user_id = ai.sender_id) as `senderName`,
                             u.displayName as `recipientName`,
                             atype.image_url as imageUrl,
                             atype.label as label,

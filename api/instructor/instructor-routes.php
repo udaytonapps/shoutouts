@@ -46,3 +46,38 @@ AppRouter::add($resource . '/alerts/([0-9]*)', CommonService::restrictToInstruct
         return AppRouter::sendJson($res);
     }
 }), 'delete');
+
+/** READ all awards (grouped by learner) */
+AppRouter::add($resource . '/awards', CommonService::restrictToInstructor(function () {
+    $res = InstructorCtr::getAllAwards();
+    return AppRouter::sendJson($res);
+}), 'get');
+
+/** READ all awards history */
+AppRouter::add($resource . '/history', CommonService::restrictToInstructor(function () {
+    $res = InstructorCtr::getAwardsHistory();
+    return AppRouter::sendJson($res);
+}), 'get');
+
+/** READ Pending Award Listing */
+AppRouter::add($resource . '/pending', CommonService::restrictToInstructor(function () {
+    $res = InstructorCtr::getPendingAwards();
+    return AppRouter::sendJson($res);
+}), 'get');
+
+/** Update the request (accept or reject) */
+AppRouter::add($resource . '/awards', CommonService::restrictToInstructor(function () {
+    $data = array();
+    // Define the expected data
+    $requiredData = array('id', 'status');
+    $optionalData = array('instructorComment');
+    // Assemble from JSON to PHP associative array
+    $data = AppRouter::assembleRouteData($requiredData, $optionalData);
+    if (!isset($data)) {
+        // Reject if required data is missing
+        return AppRouter::sendJson(array('error' => 'Missing parameters'));
+    } else {
+        $res = InstructorCtr::updateAward($data);
+        return AppRouter::sendJson($res);
+    }
+}), 'put');
