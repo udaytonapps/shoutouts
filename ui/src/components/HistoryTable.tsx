@@ -33,11 +33,19 @@ interface HistoryTableProps {
   loading: boolean;
   filters: any[];
   openReviewDialog: (requestId: string) => void;
+  hideSender?: boolean;
 }
 
 /** Shows the history of requests of all available students */
 function HistoryTable(props: HistoryTableProps) {
-  const { configuration, rows, loading, filters, openReviewDialog } = props;
+  const {
+    configuration,
+    rows,
+    loading,
+    filters,
+    openReviewDialog,
+    hideSender,
+  } = props;
   const [filteredRows, setFilteredRows] = useState(rows);
   const statusColors = getStatusColors(useTheme());
   const [orderBy, setOrderBy] = useState<keyof HistoryTableRow>("updatedAt");
@@ -80,6 +88,15 @@ function HistoryTable(props: HistoryTableProps) {
                   {...{ order, orderBy, setOrder, setOrderBy }}
                 ></TableHeaderSort>
               </TableCell>
+              {!hideSender && (
+                <TableCell>
+                  <TableHeaderSort
+                    column={"senderName"}
+                    columnLabel={"Sender Name"}
+                    {...{ order, orderBy, setOrder, setOrderBy }}
+                  ></TableHeaderSort>
+                </TableCell>
+              )}
               <TableCell>
                 <TableHeaderSort
                   column={"recipientName"}
@@ -107,7 +124,7 @@ function HistoryTable(props: HistoryTableProps) {
             </TableRow>
             {loading && (
               <TableRow>
-                <TableCell colSpan={5} padding={"none"}>
+                <TableCell colSpan={6} padding={"none"}>
                   <LinearProgress />
                 </TableCell>
               </TableRow>
@@ -116,7 +133,7 @@ function HistoryTable(props: HistoryTableProps) {
           <TableBody>
             {!sortedFilteredRows.length ? (
               <TableRow>
-                <TableCell colSpan={5} sx={{ textAlign: "center" }}>
+                <TableCell colSpan={6} sx={{ textAlign: "center" }}>
                   <Typography>No results</Typography>
                 </TableCell>
               </TableRow>
@@ -135,6 +152,11 @@ function HistoryTable(props: HistoryTableProps) {
                   >
                     {formatDbDate(row.updatedAt)}
                   </TableCell>
+                  {!hideSender && (
+                    <TableCell component="th" scope="row">
+                      {row.senderName}
+                    </TableCell>
+                  )}
                   <TableCell component="th" scope="row">
                     {row.recipientName}
                   </TableCell>
