@@ -11,53 +11,37 @@ import {
   TableRow,
   Tooltip,
   Typography,
-  useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import {
   formatDbDate,
   getComparator,
-  getStatusColors,
   stableSort,
 } from "../utils/common/helpers";
 import { SortOrder } from "../utils/common/types";
-import { AwardsConfiguration, HistoryTableRow } from "../utils/types";
+import { PendingTableRow } from "../utils/types";
 import AwardImage from "./AwardImage";
 import Filter from "./common/Filter";
-import StatusName from "./common/StatusName";
 import TableHeaderSort from "./common/TableHeaderSort";
 
-interface HistoryTableProps {
-  configuration: AwardsConfiguration;
-  rows: HistoryTableRow[];
+interface PendingTableProps {
+  rows: PendingTableRow[];
   loading: boolean;
-  filters: any[];
+  filters: any;
   openReviewDialog: (requestId: string) => void;
-  hideSender?: boolean;
 }
 
-/** Shows the history of requests of all available students */
-function HistoryTable(props: HistoryTableProps) {
-  const {
-    configuration,
-    rows,
-    loading,
-    filters,
-    openReviewDialog,
-    hideSender,
-  } = props;
+/** Shows the requests of all available students */
+function PendingTable(props: PendingTableProps) {
+  const { rows, loading, filters, openReviewDialog } = props;
   const [filteredRows, setFilteredRows] = useState(rows);
-  const statusColors = getStatusColors(useTheme());
-  const [orderBy, setOrderBy] = useState<keyof HistoryTableRow>("updatedAt");
+  const [orderBy, setOrderBy] = useState<keyof PendingTableRow>("createdAt");
   const [order, setOrder] = useState<SortOrder>(
-    orderBy === "updatedAt" ? "desc" : "asc"
+    // orderBy === "created_at" ? "desc" : "asc"
+    "asc"
   );
 
   useEffect(() => {
-    // Prepare data for the table format (to ensure proper sorting)
-    rows.forEach((row) => {
-      row.status = row.status === "SUBMITTED" ? "PENDING" : row.status;
-    });
     setFilteredRows(rows);
   }, [rows]);
 
@@ -83,20 +67,18 @@ function HistoryTable(props: HistoryTableProps) {
             <TableRow>
               <TableCell>
                 <TableHeaderSort
-                  column={"updatedAt"}
-                  columnLabel={"Last Action"}
+                  column={"createdAt"}
+                  columnLabel={"Request Date"}
                   {...{ order, orderBy, setOrder, setOrderBy }}
                 ></TableHeaderSort>
               </TableCell>
-              {!hideSender && (
-                <TableCell>
-                  <TableHeaderSort
-                    column={"senderName"}
-                    columnLabel={"Sender Name"}
-                    {...{ order, orderBy, setOrder, setOrderBy }}
-                  ></TableHeaderSort>
-                </TableCell>
-              )}
+              <TableCell>
+                <TableHeaderSort
+                  column={"senderName"}
+                  columnLabel={"Sender Name"}
+                  {...{ order, orderBy, setOrder, setOrderBy }}
+                ></TableHeaderSort>
+              </TableCell>
               <TableCell>
                 <TableHeaderSort
                   column={"recipientName"}
@@ -107,19 +89,11 @@ function HistoryTable(props: HistoryTableProps) {
               <TableCell>
                 <TableHeaderSort
                   column={"label"}
-                  columnLabel={"Award"}
+                  columnLabel={"Award Type"}
                   {...{ order, orderBy, setOrder, setOrderBy }}
                 ></TableHeaderSort>
               </TableCell>
-              {configuration.moderation_enabled && (
-                <TableCell>
-                  <TableHeaderSort
-                    column={"status"}
-                    columnLabel={"Status"}
-                    {...{ order, orderBy, setOrder, setOrderBy }}
-                  ></TableHeaderSort>
-                </TableCell>
-              )}
+              <TableCell>Sender Comment</TableCell>
               <TableCell align="center">Action</TableCell>
             </TableRow>
             {loading && (
@@ -133,7 +107,7 @@ function HistoryTable(props: HistoryTableProps) {
           <TableBody>
             {!sortedFilteredRows.length ? (
               <TableRow>
-                <TableCell colSpan={6} sx={{ textAlign: "center" }}>
+                <TableCell colSpan={5} sx={{ textAlign: "center" }}>
                   <Typography>No results</Typography>
                 </TableCell>
               </TableRow>
@@ -143,23 +117,9 @@ function HistoryTable(props: HistoryTableProps) {
                   key={`${index}-${row.id}`}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                 >
-                  <TableCell
-                    sx={{
-                      borderLeft: `5px solid ${
-                        statusColors[row.status]
-                      } !important`,
-                    }}
-                  >
-                    {formatDbDate(row.updatedAt)}
-                  </TableCell>
-                  {!hideSender && (
-                    <TableCell component="th" scope="row">
-                      {row.senderName}
-                    </TableCell>
-                  )}
-                  <TableCell component="th" scope="row">
-                    {row.recipientName}
-                  </TableCell>
+                  <TableCell>{formatDbDate(row.createdAt)}</TableCell>
+                  <TableCell>{row.senderName}</TableCell>
+                  <TableCell>{row.recipientName}</TableCell>
                   <TableCell>
                     <Tooltip title={row.label}>
                       <Box display={"flex"} alignItems={"center"}>
@@ -171,11 +131,16 @@ function HistoryTable(props: HistoryTableProps) {
                       </Box>
                     </Tooltip>
                   </TableCell>
-                  {configuration.moderation_enabled && (
-                    <TableCell>
-                      <StatusName status={row.status} />
-                    </TableCell>
-                  )}
+                  <TableCell
+                    sx={{
+                      maxWidth: 200,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {row.comment}
+                  </TableCell>
                   <TableCell align="center">
                     <Button
                       variant="contained"
@@ -194,4 +159,4 @@ function HistoryTable(props: HistoryTableProps) {
   );
 }
 
-export default HistoryTable;
+export default PendingTable;

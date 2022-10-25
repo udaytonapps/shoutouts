@@ -19,6 +19,12 @@ import {
   GetSentAwardsResponse,
   LeaderboardLeader,
   GetLeaderboardResponse,
+  GetAllAwardsResponse,
+  PendingTableRow,
+  HistoryTableRow,
+  GetHistoryResponse,
+  GetPendingAwardsResponse,
+  AwardStatusUpdateData,
 } from "./types";
 
 const config = EnvConfig[getEnvironment()];
@@ -59,6 +65,56 @@ export const deleteAlert = async (alertId: string): Promise<void> => {
   try {
     await axios.delete<ApiResponse>(
       `${config.apiUrl}/instructor/alerts/${alertId}?PHPSESSID=${config.sessionId}`
+    );
+    return;
+  } catch (e) {
+    console.error(e);
+    return;
+  }
+};
+
+export const getAllPendingAwards = async (): Promise<PendingTableRow[]> => {
+  try {
+    const res = await axios.get<GetPendingAwardsResponse>(
+      `${config.apiUrl}/instructor/pending?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const getAllAwards = async (): Promise<LeaderboardLeader[]> => {
+  try {
+    const res = await axios.get<GetAllAwardsResponse>(
+      `${config.apiUrl}/instructor/awards?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const getAllAwardsHistory = async (): Promise<HistoryTableRow[]> => {
+  try {
+    const res = await axios.get<GetHistoryResponse>(
+      `${config.apiUrl}/instructor/history?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const updateAward = async (updateData: AwardStatusUpdateData) => {
+  try {
+    const body = updateData;
+    await axios.put<ApiResponse>(
+      `${config.apiUrl}/instructor/awards?PHPSESSID=${config.sessionId}`,
+      body
     );
     return;
   } catch (e) {

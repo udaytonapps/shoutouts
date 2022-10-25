@@ -57,7 +57,10 @@ $AWARDS_INSTANCE = "CREATE TABLE {$AWARDS_INSTANCE_TABLE_NAME} (
     recipient_id            INTEGER NOT NULL, /* ID of the learner who received it */
     award_type_id           INTEGER NOT NULL, /* ID of the associated award type */
     award_status            TEXT NOT NULL,
-    comment_message         TEXT,
+    sender_comment          TEXT,
+    moderation_comment      TEXT,
+    instructor_id           INTEGER,
+    status_updated_at       TIMESTAMP,
 
     PRIMARY KEY(award_instance_id)
 
