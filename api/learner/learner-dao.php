@@ -121,12 +121,10 @@ class LearnerDAO
                             atype.image_url as imageUrl,
                             atype.label as label,
                             atype.short_description as 'description',
-                            (SELECT displayname FROM {$this->p}lti_user WHERE user_id = ai.sender_id) as `senderName`
+                            (SELECT DISTINCT displayname FROM {$this->p}lti_user WHERE user_id = ai.sender_id) as `senderName`
                 FROM {$this->awardInstanceTable} ai
         INNER JOIN {$this->awardTypeTable} atype
             ON atype.award_type_id = ai.award_type_id
-        INNER JOIN {$this->p}lti_user u
-            ON ai.recipient_id = u.email
         WHERE ai.recipient_id = :userId AND ai.context_id = :contextId AND ai.award_status = 'ACCEPTED' ORDER BY ai.created_at DESC;";
         $arr = array(':userId' => $userId, ':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
