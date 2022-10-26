@@ -195,7 +195,7 @@ const tableFilters = [
   },
   {
     column: "label",
-    label: "Award Type",
+    label: "Shoutout Type",
     type: "enum",
   },
   {

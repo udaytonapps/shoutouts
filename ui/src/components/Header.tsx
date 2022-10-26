@@ -7,7 +7,7 @@ interface HeaderProps {}
 function Header(props: HeaderProps) {
   return (
     <Box mt={6}>
-      <Typography variant="h3">Shout-Out!</Typography>
+      <Typography variant="h3">Shoutouts!</Typography>
     </Box>
   );
 }

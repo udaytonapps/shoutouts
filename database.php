@@ -54,7 +54,7 @@ $AWARDS_INSTANCE = "CREATE TABLE {$AWARDS_INSTANCE_TABLE_NAME} (
     
     /* TEMPLATE COMMENT COLS */
     sender_id               INTEGER NOT NULL, /* ID of the learner who sent it */
-    recipient_id            INTEGER NOT NULL, /* ID of the learner who received it */
+    recipient_id            TEXT NOT NULL, /* ID of the learner who received it */
     award_type_id           INTEGER NOT NULL, /* ID of the associated award type */
     award_status            TEXT NOT NULL,
     sender_comment          TEXT,

@@ -107,7 +107,7 @@ function HistoryTable(props: HistoryTableProps) {
               <TableCell>
                 <TableHeaderSort
                   column={"label"}
-                  columnLabel={"Award"}
+                  columnLabel={"Shoutout"}
                   {...{ order, orderBy, setOrder, setOrderBy }}
                 ></TableHeaderSort>
               </TableCell>

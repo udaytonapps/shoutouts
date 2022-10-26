@@ -19,11 +19,7 @@ import {
   stableSort,
 } from "../utils/common/helpers";
 import { SortOrder } from "../utils/common/types";
-import {
-  AwardsConfiguration,
-  LeaderboardLeader,
-  LearnerAward,
-} from "../utils/types";
+import { AwardsConfiguration, LeaderboardLeader } from "../utils/types";
 import AwardImage from "./AwardImage";
 import Filter from "./common/Filter";
 import TableHeaderSort from "./common/TableHeaderSort";
@@ -86,7 +82,7 @@ function LeaderboardTable(props: LeaderboardTableProps) {
                   </>
                 )}
               </TableCell>
-              <TableCell>Award(s)</TableCell>
+              <TableCell>Shoutout(s)</TableCell>
               <TableCell align="center">
                 {sorting ? (
                   <TableHeaderSort
@@ -157,7 +153,7 @@ function LeaderboardTable(props: LeaderboardTableProps) {
                       )}
                     </Box>
                   </TableCell>
-                  <TableCell align="center">{row.awards.length}</TableCell>
+                  <TableCell align="center">{row.count}</TableCell>
                 </TableRow>
               ))
             )}
