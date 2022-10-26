@@ -13,7 +13,11 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { assembleConsolidatedAwardData, getComparator, stableSort } from "../utils/common/helpers";
+import {
+  assembleConsolidatedAwardData,
+  getComparator,
+  stableSort,
+} from "../utils/common/helpers";
 import { SortOrder } from "../utils/common/types";
 import {
   AwardsConfiguration,
@@ -37,10 +41,8 @@ function LeaderboardTable(props: LeaderboardTableProps) {
   const { configuration, rows, loading, filters, sorting } = props;
 
   const [filteredRows, setFilteredRows] = useState(rows);
-  const [orderBy, setOrderBy] = useState<keyof LeaderboardLeader>("lastFirst");
-  const [order, setOrder] = useState<SortOrder>(
-    orderBy === "lastFirst" ? "asc" : "desc"
-  );
+  const [orderBy, setOrderBy] = useState<keyof LeaderboardLeader>("count");
+  const [order, setOrder] = useState<SortOrder>("desc");
 
   /** The filteredRows are automatically sorted each render */
   const sortedFilteredRows = stableSort(

@@ -145,18 +145,20 @@ class LearnerCtr
         $recipientList = array();
         // Get list of Tsugi learners in the context
         $tsugiUsers = self::$commonDAO->getContextUsers(self::$contextId);
-
         // Check for roster
         if (CommonService::$hasRoster) {
             // If there is a roster, learner list will be populated from it (such as when launched from LMS)
             foreach (CommonService::$rosterData as $learner) {
                 if ($learner["role"] == 'Learner') {
+                    // This is not returning the correct person, it is me every time - returns false/0 if no match?
+                    // Try returning the actual roster for better mock data - then see if you can use UD ID
                     $index = array_search($learner['user_id'], array_column($tsugiUsers, 'user_key'));
                     if (isset($tsugiUsers[$index]['user_id']) && $tsugiUsers[$index]['user_id'] != self::$user->id) {
                         $user = array(
                             'userId' => $tsugiUsers[$index]['user_id'],
                             'givenName' => $learner["person_name_given"],
                             'familyName' => $learner["person_name_family"],
+                            'lastFirst' => $learner["person_name_family"] . ', ' . $learner["person_name_given"]
                         );
                         array_push($recipientList, $user);
                     }
@@ -178,6 +180,7 @@ class LearnerCtr
                         'userId' => $tsugiUser['user_id'],
                         'givenName' => $givenName,
                         'familyName' => $familyName,
+                        'lastFirst' => $familyName . ', ' . $givenName
                     );
                     array_push($recipientList, $user);
                 }

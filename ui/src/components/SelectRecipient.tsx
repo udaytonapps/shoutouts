@@ -18,6 +18,10 @@ interface SelectRecipientProps {
 export default function SelectRecipient(props: SelectRecipientProps) {
   const { recipients, setSelectedRecipient } = props;
 
+  recipients.sort((a, b) => {
+    return a.lastFirst.localeCompare(b.lastFirst);
+  });
+
   return (
     <Box pt={4} display={"flex"} flexDirection={"column"} alignItems={"center"}>
       <Typography variant="h5">Please Select a Recipient</Typography>
@@ -33,7 +37,7 @@ export default function SelectRecipient(props: SelectRecipientProps) {
                   <Box display={"flex"} alignItems={"center"} pl={2} pr={2}>
                     <Avatar></Avatar>
                     <Typography textAlign={"left"} ml={2}>
-                      {recipient.familyName}, {recipient.givenName}
+                      {recipient.lastFirst}
                     </Typography>
                   </Box>
                 </CardContent>
