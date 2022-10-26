@@ -11,6 +11,7 @@ import {
   getAllPendingAwards,
   getContextConfiguration,
   getRoster,
+  getTsugiUsers,
   updateAward,
 } from "../utils/api-connector";
 import { a11yProps, compareLastNames } from "../utils/common/helpers";
@@ -52,6 +53,7 @@ function InstructorView() {
           setLoading(false);
         });
         getRoster().then((roster) => console.log("Roster: ", roster));
+        getTsugiUsers().then((users) => console.log("Tsugi Users: ", users));
       }
     });
     // The empty dependency array '[]' means this will run once, when the component renders

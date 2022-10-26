@@ -26,7 +26,7 @@ class CommonDAO
 
     public function getContextUsers($contextId)
     {
-        $query = "SELECT lu.user_id, lu.user_key, lu.displayname, lm.role FROM {$this->p}lti_user lu
+        $query = "SELECT lu.user_id, lu.user_key, lu.displayname, lu.email, lm.role FROM {$this->p}lti_user lu
         INNER JOIN {$this->p}lti_membership lm
         ON lm.user_id = lu.user_id
         WHERE lm.context_id = :contextId;";
