@@ -18,5 +18,10 @@ class CommonCtr
         self::$contextId = $CONTEXT->id;
         self::$linkId = $LINK->id;
     }
+
+    static function getTsugiUsers()
+    {
+        return self::$DAO->getContextUsers(self::$contextId);
+    }
 }
 CommonCtr::init();
