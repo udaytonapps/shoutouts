@@ -159,7 +159,7 @@ function LearnerView() {
                   variant="contained"
                   onClick={handleClickSend}
                 >
-                  Send Shout-Out!
+                  Send Shoutout!
                 </Button>
               </Box>
               <LearnerDashboard
