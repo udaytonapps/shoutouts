@@ -63,7 +63,7 @@ class InstructorCtr
                 $leader['familyName'] = $leader['displayname'];
                 $leader['givenName'] = "";
             }
-            $leader['awards'] = self::$learnerDAO->getReceivedApprovedCourseAwards($leader['userId'], self::$contextId);
+            $leader['awards'] = self::$learnerDAO->getReceivedApprovedCourseAwards($leader['email'], self::$contextId);
         }
         return $leaders;
     }

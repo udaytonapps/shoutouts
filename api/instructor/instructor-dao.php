@@ -46,17 +46,18 @@ class InstructorDAO
     public function getAllAwards($contextId)
     {
         // These are being aliased to camelCase - may or may not be really necessary
-        $query = "SELECT DISTINCT u.user_id as `userId`,
-                            u.displayname as `displayname`,
-                            (SELECT COUNT(*) 
-                                FROM  {$this->awardInstanceTable} iai
-                                WHERE iai.context_id = :contextId
-                                    AND u.user_id = iai.recipient_id
-                                    AND iai.award_status = 'ACCEPTED'
-                            ) as `count`
+        $query = "SELECT DISTINCT   u.user_id as `userId`,
+                                    u.displayname as `displayname`,
+                                    u.email as `email`,
+                                    (SELECT COUNT(*) 
+                                        FROM  {$this->awardInstanceTable} iai
+                                        WHERE iai.context_id = :contextId
+                                            AND u.email = iai.recipient_id
+                                            AND iai.award_status = 'ACCEPTED'
+                                    ) as `count`
         FROM {$this->p}lti_user u
         INNER JOIN {$this->awardInstanceTable} ai
-            ON ai.recipient_id = u.user_id
+            ON ai.recipient_id = u.email
         WHERE ai.context_id = :contextId AND ai.award_status = 'ACCEPTED' ORDER BY `count` DESC";
         $arr = array(':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
@@ -72,16 +73,14 @@ class InstructorDAO
                             ai.created_at as `createdAt`,
                             ai.updated_at as `updatedAt`,
                             ai.award_status as `status`,
-                            u.displayName as `recipientName`,
                             (SELECT displayName from {$this->p}lti_user WHERE user_id = ai.sender_id) as `senderName`,
+                            (SELECT displayName from {$this->p}lti_user WHERE email = ai.recipient_id) as `recipientName`,
                             atype.image_url as imageUrl,
                             atype.label as label,
                             atype.short_description as 'description'
                 FROM {$this->awardInstanceTable} ai
         INNER JOIN {$this->awardTypeTable} atype
             ON atype.award_type_id = ai.award_type_id
-        INNER JOIN {$this->p}lti_user u
-            ON ai.recipient_id = u.user_id
         WHERE ai.context_id = :contextId ORDER BY ai.created_at DESC;";
         $arr = array(':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
@@ -96,16 +95,14 @@ class InstructorDAO
                             ai.created_at as `createdAt`,
                             ai.updated_at as `updatedAt`,
                             ai.award_status as `status`,
-                            u.displayName as `recipientName`,
                             (SELECT displayName from {$this->p}lti_user WHERE user_id = ai.sender_id) as `senderName`,
+                            (SELECT displayName from {$this->p}lti_user WHERE email = ai.recipient_id) as `recipientName`,
                             atype.image_url as imageUrl,
                             atype.label as label,
                             atype.short_description as 'description'
                 FROM {$this->awardInstanceTable} ai
         INNER JOIN {$this->awardTypeTable} atype
             ON atype.award_type_id = ai.award_type_id
-        INNER JOIN {$this->p}lti_user u
-            ON ai.recipient_id = u.user_id
         WHERE ai.award_status = 'SUBMITTED' AND ai.context_id = :contextId ORDER BY ai.created_at DESC;";
         $arr = array(':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
