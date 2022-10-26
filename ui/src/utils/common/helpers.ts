@@ -200,5 +200,7 @@ export const assembleConsolidatedAwardData = (awards: LearnerAward[]) => {
     }
     consolidatedAwardData[award.label].count++;
   });
-  return Object.values(consolidatedAwardData);
+  return Object.values(consolidatedAwardData).sort((a, b) => {
+    return b.count - a.count;
+  });
 };
