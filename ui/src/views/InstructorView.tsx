@@ -10,6 +10,7 @@ import {
   getAllAwardsHistory,
   getAllPendingAwards,
   getContextConfiguration,
+  getRoster,
   updateAward,
 } from "../utils/api-connector";
 import { a11yProps, compareLastNames } from "../utils/common/helpers";
@@ -47,9 +48,10 @@ function InstructorView() {
         // Assemble the promises to run them all in parallel
         const promises = [fetchAwarded(), fetchPending(), fetchHistory()];
         // Turn off loading once all promises are settled
-        return Promise.allSettled(promises).then(() => {
+        Promise.allSettled(promises).then(() => {
           setLoading(false);
         });
+        getRoster().then((roster) => console.log("Roster: ", roster));
       }
     });
     // The empty dependency array '[]' means this will run once, when the component renders

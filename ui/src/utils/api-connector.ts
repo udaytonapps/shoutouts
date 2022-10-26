@@ -29,6 +29,29 @@ import {
 
 const config = EnvConfig[getEnvironment()];
 
+export const getRoster = async (): Promise<any> => {
+  try {
+    const res = await axios.get<GetInfoResponse>(
+      `${config.apiUrl}/roster?PHPSESSID=${config.sessionId}`
+    );
+    if (typeof res.data === "string") {
+      // A warning may have come back. Try to parse the info, if that part succeeded.
+      const jsonString = (res.data as any).match(/{(.*)}/g)[0];
+      const jsonResponse = JSON.parse(jsonString);
+      return jsonResponse.data;
+    } else {
+      return res.data.data;
+    }
+  } catch (e) {
+    console.error(e);
+    if (typeof e === "string") {
+      return e;
+    } else {
+      return null;
+    }
+  }
+};
+
 export const getInfo = async (): Promise<LtiAppInfo | string | null> => {
   try {
     const res = await axios.get<GetInfoResponse>(

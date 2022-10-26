@@ -51,6 +51,15 @@ class CommonService
         }
     }
 
+    static function roster()
+    {
+        if (isset(self::$hasRoster) && isset(self::$rosterData)) {
+            return self::$rosterData;
+        } else {
+            return array();
+        }
+    }
+
     static function info()
     {
         return array(
