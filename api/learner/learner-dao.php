@@ -126,7 +126,7 @@ class LearnerDAO
         INNER JOIN {$this->awardTypeTable} atype
             ON atype.award_type_id = ai.award_type_id
         INNER JOIN {$this->p}lti_user u
-            ON ai.recipient_id = u.user_id
+            ON ai.recipient_id = u.email
         WHERE ai.recipient_id = :userId AND ai.context_id = :contextId AND ai.award_status = 'ACCEPTED' ORDER BY ai.created_at DESC;";
         $arr = array(':userId' => $userId, ':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
@@ -151,7 +151,7 @@ class LearnerDAO
         INNER JOIN {$this->awardTypeTable} atype
             ON atype.award_type_id = ai.award_type_id
         INNER JOIN {$this->p}lti_user u
-            ON ai.recipient_id = u.user_id
+            ON ai.recipient_id = u.email
         WHERE ai.sender_id = :userId AND ai.context_id = :contextId ORDER BY ai.created_at DESC;";
         $arr = array(':userId' => $userId, ':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
@@ -161,17 +161,17 @@ class LearnerDAO
     public function getLeaderboardLeaders($contextId, $limit)
     {
         // These are being aliased to camelCase - may or may not be really necessary
-        $query = "SELECT DISTINCT u.user_id as `userId`,
+        $query = "SELECT DISTINCT u.email as `email`,
                             u.displayname as `displayname`,
                             (SELECT COUNT(*) 
                                 FROM  {$this->awardInstanceTable} iai
                                 WHERE iai.context_id = :contextId
-                                    AND u.user_id = iai.recipient_id
+                                    AND u.email = iai.recipient_id
                                     AND iai.award_status = 'ACCEPTED'
                             ) as `count`
         FROM {$this->p}lti_user u
         INNER JOIN {$this->awardInstanceTable} ai
-            ON ai.recipient_id = u.user_id
+            ON ai.recipient_id = u.email
         WHERE ai.context_id = :contextId AND ai.award_status = 'ACCEPTED' ORDER BY `count` DESC LIMIT {$limit}";
         $arr = array(':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);

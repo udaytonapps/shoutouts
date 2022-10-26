@@ -97,7 +97,7 @@ class LearnerCtr
     static function getReceivedApprovedCourseAwards()
     {
         $config = self::getContextConfiguration();
-        $res = self::$DAO->getReceivedApprovedCourseAwards(self::$user->id, self::$contextId);
+        $res = self::$DAO->getReceivedApprovedCourseAwards(self::$user->email, self::$contextId);
         if ($config['anonymous_enabled']) {
             foreach ($res as &$award) {
                 $award['senderName'] = null;
@@ -150,18 +150,14 @@ class LearnerCtr
             // If there is a roster, learner list will be populated from it (such as when launched from LMS)
             foreach (CommonService::$rosterData as $learner) {
                 if ($learner["role"] == 'Learner') {
-                    // This is not returning the correct person, it is me every time - returns false/0 if no match?
-                    // Try returning the actual roster for better mock data - then see if you can use UD ID
-                    $index = array_search($learner['user_id'], array_column($tsugiUsers, 'user_key'));
-                    if (isset($tsugiUsers[$index]['user_id']) && $tsugiUsers[$index]['user_id'] != self::$user->id) {
-                        $user = array(
-                            'userId' => $tsugiUsers[$index]['user_id'],
-                            'givenName' => $learner["person_name_given"],
-                            'familyName' => $learner["person_name_family"],
-                            'lastFirst' => $learner["person_name_family"] . ', ' . $learner["person_name_given"]
-                        );
-                        array_push($recipientList, $user);
-                    }
+                    // Using the user email instead of user_id
+                    $user = array(
+                        'userId' => $learner["user_email"],
+                        'givenName' => $learner["person_name_given"],
+                        'familyName' => $learner["person_name_family"],
+                        'lastFirst' => $learner["person_name_family"] . ', ' . $learner["person_name_given"]
+                    );
+                    array_push($recipientList, $user);
                 }
             }
         } else {
@@ -177,7 +173,7 @@ class LearnerCtr
                         $givenName = "";
                     }
                     $user = array(
-                        'userId' => $tsugiUser['user_id'],
+                        'userId' => $tsugiUser['email'],
                         'givenName' => $givenName,
                         'familyName' => $familyName,
                         'lastFirst' => $familyName . ', ' . $givenName
@@ -209,7 +205,7 @@ class LearnerCtr
                         $leader['givenName'] = "";
                     }
                 }
-                $leader['awards'] = self::$DAO->getReceivedApprovedCourseAwards($leader['userId'], self::$contextId);
+                $leader['awards'] = self::$DAO->getReceivedApprovedCourseAwards($leader['email'], self::$contextId);
             }
             return $leaders;
         } else {
