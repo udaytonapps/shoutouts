@@ -62,6 +62,7 @@ export interface PendingTableRow extends SentAward {
 export interface LeaderboardLeader {
   awards: LearnerAward[];
   userId: string;
+  count: number;
   givenName?: string;
   familyName?: string;
   lastFirst?: string;
@@ -80,6 +81,7 @@ export interface Recipient {
   userId: string;
   givenName: string;
   familyName: string;
+  lastFirst: string;
 }
 
 export interface AwardStatusUpdateData {
