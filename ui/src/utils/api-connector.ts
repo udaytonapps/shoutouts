@@ -86,6 +86,19 @@ export const getInfo = async (): Promise<LtiAppInfo | string | null> => {
 
 /** INSTRUCTOR */
 
+export const getInstructorConfiguration =
+  async (): Promise<AwardsConfiguration | null> => {
+    try {
+      const res = await axios.get<GetContextConfigurationResponse>(
+        `${config.apiUrl}/instructor/configuration?PHPSESSID=${config.sessionId}`
+      );
+      return res.data.data || null;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+
 export const addAlert = async (alert: TemplateAlert): Promise<void> => {
   try {
     const body = alert;
@@ -104,6 +117,46 @@ export const deleteAlert = async (alertId: string): Promise<void> => {
   try {
     await axios.delete<ApiResponse>(
       `${config.apiUrl}/instructor/alerts/${alertId}?PHPSESSID=${config.sessionId}`
+    );
+    return;
+  } catch (e) {
+    console.error(e);
+    return;
+  }
+};
+
+export const addSettings = async (
+  configuration: AwardsConfiguration,
+  exclusionIds: string[]
+): Promise<void> => {
+  try {
+    const body = {
+      configuration,
+      exclusionIds,
+    };
+    await axios.post<ApiResponse>(
+      `${config.apiUrl}/instructor/configuration?PHPSESSID=${config.sessionId}`,
+      body
+    );
+    return;
+  } catch (e) {
+    console.error(e);
+    return;
+  }
+};
+
+export const updateSettings = async (
+  configuration: AwardsConfiguration,
+  exclusionIds: string[]
+): Promise<void> => {
+  try {
+    const body = {
+      configuration,
+      exclusionIds,
+    };
+    await axios.put<ApiResponse>(
+      `${config.apiUrl}/instructor/configuration?PHPSESSID=${config.sessionId}`,
+      body
     );
     return;
   } catch (e) {
@@ -159,6 +212,18 @@ export const updateAward = async (updateData: AwardStatusUpdateData) => {
   } catch (e) {
     console.error(e);
     return;
+  }
+};
+
+export const getAllAwardTypes = async (): Promise<AwardType[]> => {
+  try {
+    const res = await axios.get<GetPotentialAwardResponse>(
+      `${config.apiUrl}/instructor/award-types?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
   }
 };
 
