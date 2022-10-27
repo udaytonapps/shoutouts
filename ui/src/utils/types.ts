@@ -22,7 +22,7 @@ export interface TemplateComment {
 }
 
 export interface AwardsConfiguration {
-  id: string;
+  configuration_id?: string;
   comments_required: boolean;
   moderation_enabled: boolean;
   anonymous_enabled: boolean;
