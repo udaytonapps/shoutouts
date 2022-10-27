@@ -37,8 +37,15 @@ function LeaderboardTable(props: LeaderboardTableProps) {
   const { configuration, rows, loading, filters, sorting } = props;
 
   const [filteredRows, setFilteredRows] = useState(rows);
-  const [orderBy, setOrderBy] = useState<keyof LeaderboardLeader>("count");
-  const [order, setOrder] = useState<SortOrder>("desc");
+  // const [orderBy, setOrderBy] = useState<keyof LeaderboardLeader>("count");
+  const [orderBy, setOrderBy] = useState<keyof LeaderboardLeader>(
+    sorting ? "lastFirst" : "count"
+  );
+
+  // const [order, setOrder] = useState<SortOrder>("desc");
+  const [order, setOrder] = useState<SortOrder>(
+    orderBy === "count" ? "desc" : "asc"
+  );
 
   /** The filteredRows are automatically sorted each render */
   const sortedFilteredRows = stableSort(
