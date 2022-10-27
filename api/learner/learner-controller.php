@@ -62,8 +62,10 @@ class LearnerCtr
             // received_cooldown null
             // received_limit null
             // received_value "2"
+            return $config;
+        } else {
+            return null;
         }
-        return $config;
     }
 
     /** Add an award for a learner */

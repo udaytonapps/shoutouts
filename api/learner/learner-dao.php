@@ -17,10 +17,10 @@ class LearnerDAO
         $this->p = $CFG->dbprefix;
         $this->alertTable = $CFG->dbprefix . "template_alert";
         $this->commentTable = $CFG->dbprefix . "template_comment";
-        $this->awardConfigurationTable = $CFG->dbprefix . "awards_configuration";
-        $this->awardInstanceTable = $CFG->dbprefix . "awards_instance";
-        $this->awardTypeTable = $CFG->dbprefix . "awards_type";
-        $this->awardTypeExclusionsTable = $CFG->dbprefix . "awards_type_exclusion";
+        $this->awardConfigurationTable = $CFG->dbprefix . "shoutouts_configuration";
+        $this->awardInstanceTable = $CFG->dbprefix . "shoutouts_instance";
+        $this->awardTypeTable = $CFG->dbprefix . "shoutouts_type";
+        $this->awardTypeExclusionsTable = $CFG->dbprefix . "shoutouts_type_exclusion";
         $this->PDOX = $PDOX;
     }
 
@@ -106,7 +106,7 @@ class LearnerDAO
         WHERE (t.context_id = :contextId OR t.context_id IS NULL)
         AND t.is_active = 1
         AND e.exclusion_id IS NULL
-        ORDER BY t.label DESC;";
+        ORDER BY t.label ASC;";
         $arr = array(':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
     }
