@@ -108,11 +108,11 @@ class InstructorCtr
             $updatedAward = self::$DAO->getAward($data['id']);
             $learner = self::$commonDAO->getUserContact($updatedAward['sender_id']);
             $action = strtolower($updatedAward['award_status']);
-            $subject = "Award request $action for " . $CONTEXT->title;
+            $subject = "Shoutout request $action for " . $CONTEXT->title;
             $type = self::$learnerDAO->getAwardType($updatedAward['award_type_id']);
-            $recipient = self::$commonDAO->getUserContact($updatedAward['recipient_id']);
+            // $recipient = self::$commonDAO->getUserContact($updatedAward['recipient_id']);
             $reasonString = isset($updatedAward['moderation_comment']) ? "Instructor Comment: {$updatedAward['moderation_comment']}\n\n" : "";
-            $instructorMsg = "Your request has been {$action}.\n\n{$reasonString}Course: {$CONTEXT->title}\nRecipient: {$recipient['displayname']}\nAward Type: {$type['label']}\nSender Comment: {$updatedAward['sender_comment']}";
+            $instructorMsg = "The Shoutout you sent has been {$action}.\n\n{$reasonString}Course: {$CONTEXT->title}\nRecipient: {$updatedAward['recipient_id']}\nAward Type: {$type['label']}\nSender Comment: {$updatedAward['sender_comment']}";
             CommonService::sendEmailFromActiveUser($learner['displayname'], $learner['email'], $subject, $instructorMsg);
             if ($data['status'] == 'ACCEPTED') {
                 self::sendApprovalEmailToRecipient($updatedAward['recipient_id'], $updatedAward['award_type_id']);
@@ -129,11 +129,11 @@ class InstructorCtr
     static function sendApprovalEmailToRecipient($recipientId, $typeId)
     {
         global $CONTEXT;
-        $subject = "You received an award in " . $CONTEXT->title;
+        $subject = "You received a Shoutout in " . $CONTEXT->title;
         $type = self::$learnerDAO->getAwardType($typeId);
-        $recipient = self::$commonDAO->getUserContact($recipientId);
-        $instructorMsg = "Congrats! You received an award.\n\nCourse: {$CONTEXT->title}\nAward Type: {$type['label']}";
-        CommonService::sendEmailFromActiveUser($recipient['displayname'], $recipient['email'], $subject, $instructorMsg);
+        // $recipient = self::$commonDAO->getUserContact($recipientId);
+        $instructorMsg = "Congrats! You received a Shoutout!\n\nCourse: {$CONTEXT->title}\nAward Type: {$type['label']}";
+        CommonService::sendEmailFromActiveUser(null, $recipientId, $subject, $instructorMsg);
     }
 
     /** Creates a new configuration (along with associated categories) */
@@ -143,6 +143,7 @@ class InstructorCtr
         $exclusionIds = $data['exclusionIds'];
 
         $newConfigId = self::$DAO->addConfiguration(
+            self::$user->id,
             self::$contextId,
             self::$linkId,
             (int)$config['anonymous_enabled'],

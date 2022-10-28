@@ -73,6 +73,11 @@ class CommonService
         );
     }
 
+    static function getUserContactByRosterId($userKey)
+    {
+        return self::$DAO->getUserContactByRosterId($userKey);
+    }
+
     /** 
      * Restriction middleware that only allows the routing if the user is an instructor.
      * Call this before any route callback that should be restricted to instructor use.
@@ -121,7 +126,12 @@ class CommonService
     static function sendEmailFromActiveUser($recipientName, $recipientEmail, $subject, $body)
     {
         global $USER;
-        $msg = "Hi " . $recipientName . ",\n\n" . $body . "\n\nHave a great day!";
+        if (isset($recipientName)) {
+            $salutation = "Hi " . $recipientName . ",\n\n";
+        } else {
+            $salutation = "Hi,\n\n";
+        }
+        $msg = $salutation . $body . "\n\nHave a great day!";
 
         // use wordwrap() if lines are longer than 120 characters
         $msg = wordwrap($msg, 120);

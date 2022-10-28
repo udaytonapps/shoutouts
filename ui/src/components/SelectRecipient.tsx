@@ -1,5 +1,5 @@
+import { Campaign } from "@mui/icons-material";
 import {
-  Avatar,
   Box,
   ButtonBase,
   Card,
@@ -35,7 +35,7 @@ export default function SelectRecipient(props: SelectRecipientProps) {
               >
                 <CardContent sx={{ width: "100%", p: 1.25 }}>
                   <Box display={"flex"} alignItems={"center"} pl={2} pr={2}>
-                    <Avatar></Avatar>
+                    <Campaign />
                     <Typography textAlign={"left"} ml={2}>
                       {recipient.lastFirst}
                     </Typography>

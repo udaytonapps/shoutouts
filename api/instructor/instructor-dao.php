@@ -55,11 +55,17 @@ class InstructorDAO
                                         WHERE iai.context_id = :contextId
                                             AND u.email = iai.recipient_id
                                             AND iai.award_status = 'ACCEPTED'
-                                    ) as `count`
+                                    ) as `receivedCount`,
+                                    (SELECT COUNT(*) 
+                                        FROM  {$this->awardInstanceTable} iai
+                                        WHERE iai.context_id = :contextId
+                                            AND u.user_id = iai.sender_id
+                                            AND iai.award_status = 'ACCEPTED'
+                                    ) as `sentCount`
         FROM {$this->p}lti_user u
         INNER JOIN {$this->awardInstanceTable} ai
-            ON ai.recipient_id = u.email
-        WHERE ai.context_id = :contextId AND ai.award_status = 'ACCEPTED' ORDER BY `count` DESC";
+            ON ai.recipient_id = u.email OR ai.sender_id = u.user_id
+        WHERE ai.context_id = :contextId ORDER BY `receivedCount` DESC";
         $arr = array(':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
     }
@@ -131,6 +137,7 @@ class InstructorDAO
     }
 
     public function addConfiguration(
+        $userId,
         $contextId,
         $linkId,
         $anonymous_enabled,
@@ -141,9 +148,10 @@ class InstructorDAO
         $awarded_value,
         $received_value
     ) {
-        $query = "INSERT INTO {$this->awardConfigurationTable} (context_id, link_id, anonymous_enabled, comments_required, leaderboard_enabled, moderation_enabled, recipient_view_enabled, awarded_value, received_value)
-        VALUES ( :contextId, :linkId, :anonymous_enabled, :comments_required, :leaderboard_enabled, :moderation_enabled, :recipient_view_enabled, :awarded_value, :received_value);";
+        $query = "INSERT INTO {$this->awardConfigurationTable} (user_id, context_id, link_id, anonymous_enabled, comments_required, leaderboard_enabled, moderation_enabled, recipient_view_enabled, awarded_value, received_value)
+        VALUES (:userIdd, :contextId, :linkId, :anonymous_enabled, :comments_required, :leaderboard_enabled, :moderation_enabled, :recipient_view_enabled, :awarded_value, :received_value);";
         $arr = array(
+            ':userId' => $userId,
             ':contextId' => $contextId,
             ':linkId' => $linkId,
             ':anonymous_enabled' => $anonymous_enabled,

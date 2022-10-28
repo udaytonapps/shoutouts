@@ -18,6 +18,7 @@ $SHOUTOUTS_CONFIGURATION = "CREATE TABLE {$SHOUTOUTS_CONFIGURATION_TABLE_NAME} (
     configuration_id        INTEGER NOT NULL AUTO_INCREMENT,
     
     /* COMMON COLS */
+    user_id                 INTEGER, /* The original creator - used for notifications if not roster data exists */
     context_id              INTEGER, /* Tracked and scoped, this is the course */
     link_id                 INTEGER, /* Tracked but not scoped, this is the instance */
     created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

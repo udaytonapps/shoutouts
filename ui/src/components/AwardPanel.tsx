@@ -1,4 +1,4 @@
-import { WorkspacePremium } from "@mui/icons-material";
+import { Campaign } from "@mui/icons-material";
 import { Box, Card, CardContent, CardHeader, Typography } from "@mui/material";
 import { formatDbDate } from "../utils/common/helpers";
 import { AwardsConfiguration, LearnerAward } from "../utils/types";
@@ -14,7 +14,7 @@ export default function AwardPanel(props: AwardPanelProps) {
   return (
     <Card raised={true}>
       <CardHeader
-        avatar={<WorkspacePremium fontSize="large" />}
+        avatar={<Campaign fontSize="large" />}
         title={
           <Box display={"flex"} justifyContent={"space-between"}>
             <Typography fontWeight={"bold"}>{award.label}</Typography>

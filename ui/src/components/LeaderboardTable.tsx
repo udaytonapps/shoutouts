@@ -12,7 +12,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { AppContext } from "../utils/common/context";
 import {
   assembleConsolidatedAwardData,
   getComparator,
@@ -34,17 +35,25 @@ interface LeaderboardTableProps {
 
 /** Shows the history of requests of all available students */
 function LeaderboardTable(props: LeaderboardTableProps) {
+  const appInfo = useContext(AppContext);
   const { configuration, rows, loading, filters, sorting } = props;
+
+  useEffect(() => {
+    rows.forEach((row) => {
+      row.sentValue = row.sentCount * configuration.awarded_value;
+      row.receivedValue = row.receivedCount * configuration.received_value;
+    });
+  }, [configuration, rows]);
 
   const [filteredRows, setFilteredRows] = useState(rows);
   // const [orderBy, setOrderBy] = useState<keyof LeaderboardLeader>("count");
   const [orderBy, setOrderBy] = useState<keyof LeaderboardLeader>(
-    sorting ? "lastFirst" : "count"
+    sorting ? "lastFirst" : "receivedCount"
   );
 
   // const [order, setOrder] = useState<SortOrder>("desc");
   const [order, setOrder] = useState<SortOrder>(
-    orderBy === "count" ? "desc" : "asc"
+    orderBy === "receivedCount" ? "desc" : "asc"
   );
 
   /** The filteredRows are automatically sorted each render */
@@ -93,7 +102,7 @@ function LeaderboardTable(props: LeaderboardTableProps) {
               <TableCell align="center">
                 {sorting ? (
                   <TableHeaderSort
-                    column={"count"}
+                    column={"receivedCount"}
                     columnLabel={"Total Received"}
                     {...{ order, orderBy, setOrder, setOrderBy }}
                   ></TableHeaderSort>
@@ -101,6 +110,46 @@ function LeaderboardTable(props: LeaderboardTableProps) {
                   <>Total Received</>
                 )}
               </TableCell>
+
+              {appInfo.isInstructor && configuration.received_value > 0 && (
+                <TableCell align="center">
+                  {sorting ? (
+                    <TableHeaderSort
+                      column={"receivedValue"}
+                      columnLabel={"Received Value"}
+                      {...{ order, orderBy, setOrder, setOrderBy }}
+                    ></TableHeaderSort>
+                  ) : (
+                    <>Received Value</>
+                  )}
+                </TableCell>
+              )}
+              {appInfo.isInstructor && (
+                <TableCell align="center">
+                  {sorting ? (
+                    <TableHeaderSort
+                      column={"sentCount"}
+                      columnLabel={"Total Sent"}
+                      {...{ order, orderBy, setOrder, setOrderBy }}
+                    ></TableHeaderSort>
+                  ) : (
+                    <>Total Sent</>
+                  )}
+                </TableCell>
+              )}
+              {appInfo.isInstructor && configuration.awarded_value > 0 && (
+                <TableCell align="center">
+                  {sorting ? (
+                    <TableHeaderSort
+                      column={"sentValue"}
+                      columnLabel={"Sent Value"}
+                      {...{ order, orderBy, setOrder, setOrderBy }}
+                    ></TableHeaderSort>
+                  ) : (
+                    <>Sent Value</>
+                  )}
+                </TableCell>
+              )}
             </TableRow>
             {loading && (
               <TableRow>
@@ -160,7 +209,16 @@ function LeaderboardTable(props: LeaderboardTableProps) {
                       )}
                     </Box>
                   </TableCell>
-                  <TableCell align="center">{row.count}</TableCell>
+                  <TableCell align="center">{row.receivedCount}</TableCell>
+                  {appInfo.isInstructor && configuration.received_value > 0 && (
+                    <TableCell align="center">{row.receivedValue}</TableCell>
+                  )}
+                  {appInfo.isInstructor && (
+                    <TableCell align="center">{row.sentCount}</TableCell>
+                  )}
+                  {appInfo.isInstructor && configuration.awarded_value > 0 && (
+                    <TableCell align="center">{row.sentValue}</TableCell>
+                  )}
                 </TableRow>
               ))
             )}

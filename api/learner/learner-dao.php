@@ -21,6 +21,7 @@ class LearnerDAO
         $this->awardInstanceTable = $CFG->dbprefix . "shoutouts_instance";
         $this->awardTypeTable = $CFG->dbprefix . "shoutouts_type";
         $this->awardTypeExclusionsTable = $CFG->dbprefix . "shoutouts_type_exclusion";
+        $this->awardInstructorOption = $CFG->dbprefix . "shoutouts_instructor_option";
         $this->PDOX = $PDOX;
     }
 
@@ -164,12 +165,20 @@ class LearnerDAO
                                         WHERE iai.context_id = :contextId
                                             AND u.email = iai.recipient_id
                                             AND iai.award_status = 'ACCEPTED'
-                                    ) as `count`
+                                    ) as `receivedCount`
         FROM {$this->p}lti_user u
         INNER JOIN {$this->awardInstanceTable} ai
             ON ai.recipient_id = u.email
-        WHERE ai.context_id = :contextId AND ai.award_status = 'ACCEPTED' ORDER BY `count` DESC LIMIT {$limit}";
+        WHERE ai.context_id = :contextId AND ai.award_status = 'ACCEPTED' ORDER BY `receivedCount` DESC LIMIT {$limit}";
         $arr = array(':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
+    }
+
+    public function getInstructorNotificationOption($instructorId, $configurationId)
+    {
+        $query = "SELECT * FROM {$this->awardInstructorOption}
+        WHERE user_id = :userId AND configuration_id = :configurationId";
+        $arr = array('userId' => $instructorId, ':configurationId' => $configurationId);
+        return $this->PDOX->rowDie($query, $arr);
     }
 }

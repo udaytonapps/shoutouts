@@ -1,7 +1,9 @@
 import { NotificationImportant, Settings } from "@mui/icons-material";
 import {
+  Alert,
   Badge,
   Box,
+  Button,
   IconButton,
   Tab,
   Tabs,
@@ -14,7 +16,7 @@ import HistoryTable from "../components/HistoryTable";
 import LeaderboardTable from "../components/LeaderboardTable";
 import PendingTable from "../components/PendingTable";
 import ReviewDialog from "../components/ReviewDialog";
-// import SettingsDialog from "../components/SettingsDIalog";
+import SettingsDialog from "../components/SettingsDialog";
 import {
   addSettings,
   getAllAwards,
@@ -23,8 +25,6 @@ import {
   getAllPendingAwards,
   getInstructorConfiguration,
   getPotentialAwards,
-  getRoster,
-  getTsugiUsers,
   updateAward,
   updateSettings,
 } from "../utils/api-connector";
@@ -56,7 +56,8 @@ function InstructorView() {
   >();
 
   const tabs = ["AWARDED", "HISTORY"];
-  if (configuration?.moderation_enabled) {
+  // Even if moderation is turned off, will show if un-approved items will remain
+  if (configuration?.moderation_enabled || pendingAwards.length > 0) {
     tabs.unshift("PENDING");
   }
 
@@ -64,8 +65,10 @@ function InstructorView() {
     // Retrieve the list of alerts to display
     getInstructorConfiguration().then((config) => {
       setConfiguration(config);
-      fetchPotentialAwards();
-      fetchAllAwardTypes();
+      // Must retrieve limited list after
+      fetchAllAwardTypes().then(() => {
+        fetchPotentialAwards();
+      });
       if (config) {
         // Assemble the promises to run them all in parallel
         const promises = [fetchAwarded(), fetchPending(), fetchHistory()];
@@ -73,8 +76,8 @@ function InstructorView() {
         Promise.allSettled(promises).then(() => {
           setLoading(false);
         });
-        getRoster().then((roster) => console.log("Roster: ", roster));
-        getTsugiUsers().then((users) => console.log("Tsugi Users: ", users));
+        // getRoster().then((roster) => console.log("Roster: ", roster));
+        // getTsugiUsers().then((users) => console.log("Tsugi Users: ", users));
       }
     });
     // The empty dependency array '[]' means this will run once, when the component renders
@@ -205,6 +208,16 @@ function InstructorView() {
     <>
       {configuration && (
         <Box>
+          {!configuration.moderation_enabled && pendingAwards.length > 0 && (
+            <Box mt={2} mb={2}>
+              <Alert severity="warning">
+                It appears you toggled moderation off but have pending requests
+                that were submitted while moderation was active. The 'Pending'
+                tab will remain until moderation action is taken on any
+                remaining items.
+              </Alert>
+            </Box>
+          )}
           <Box display={"flex"} justifyContent={"end"} mr={1}>
             <Box>
               <Tooltip
@@ -297,14 +310,14 @@ function InstructorView() {
         </Box>
       )}
       {/* DIALOGS */}
-      {/* <SettingsDialog
+      <SettingsDialog
         handleClose={handleCloseSettingsDialog}
         handleSave={handleSaveSettingsDialog}
         open={settingsDialogOpen}
         settings={configuration || null}
         potentialTypes={activeAwardTypes}
         allTypes={allAwardTypes}
-      /> */}
+      />
     </>
   );
 }

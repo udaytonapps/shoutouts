@@ -53,7 +53,6 @@ class LearnerCtr
             $config['comments_required'] = $config['comments_required'] ? true : false;
             $config['leaderboard_enabled'] = $config['leaderboard_enabled'] ? true : false;
             $config['moderation_enabled'] = $config['moderation_enabled'] ? true : false;
-            $config['notifications_enabled'] = $config['notifications_enabled'] ? true : false;
             $config['recipient_view_enabled'] = $config['recipient_view_enabled'] ? true : false;
             // Optional
             // awarded_cooldown null
@@ -71,6 +70,7 @@ class LearnerCtr
     /** Add an award for a learner */
     static function addAward($data)
     {
+        global $CONTEXT;
         // Check config to see if moderation is required. If so, auto-moderation should be false
         $config = self::$DAO->getContextConfiguration(self::$contextId);
         if ($config['moderation_enabled'] == 1) {
@@ -79,6 +79,40 @@ class LearnerCtr
             $awardStatus = "ACCEPTED";
         }
         $res = self::$DAO->addAward(self::$contextId, self::$linkId, self::$user->id, $data['recipientId'], $data['awardTypeId'], $data['comment'], $awardStatus);
+        $type = self::$DAO->getAwardType($data['awardTypeId']);
+
+        // Email any instructors with notifications not turned off
+        $subject = "New 'Shoutout' sent in " . $CONTEXT->title;
+        $personalMsg = "Your 'Shoutout' has been submitted.\n\nCourse: " . $CONTEXT->title . "\nRecipient: " . $data['recipientId'] . "\nRequest Type: " . $type['label'] . "\nYour Comment: " . ($data['comment']);
+        CommonService::sendEmailToActiveUser($subject, $personalMsg);
+        // Send email to instructor IF they have that configuration
+        $instructorMsg = "A new 'Shoutout' has been submitted.\n\nCourse: " . $CONTEXT->title . "\nRecipient: " . $data['recipientId'] . "\nSender: " . self::$user->displayname . "\nRequest Type: " . $type['label'] . "\nLearner Comment: " . $data['comment'];
+        if (CommonService::$hasRoster) {
+            // If there is a roster, check notifications settings for each
+            foreach (CommonService::$rosterData as $rosterPerson) {
+                if ($rosterPerson["roles"] == 'Instructor') {
+                    // Check first to see if notifications are turned off.
+                    $instructor = CommonService::getUserContactByRosterId($rosterPerson['user_id']);
+                    // Must clear out option each time
+                    $option = null;
+                    if (isset($instructor['user_id'])) {
+                        $option = self::$DAO->getInstructorNotificationOption($instructor['user_id'], $config['configuration_id']);
+                    }
+                    if (!isset($option['notifications_pref']) || $option['notifications_pref'] == true) {
+                        CommonService::sendEmailFromActiveUser($rosterPerson['person_name_full'], $rosterPerson['person_contact_email_primary'], $subject, $instructorMsg);
+                    }
+                }
+            }
+        } else {
+            // If no roster, simply determine notification preference based on the userId on the instructor that created the settings
+            $instructor = self::$commonDAO->getUserContact($config['user_id']);
+            $option = self::$DAO->getInstructorNotificationOption($instructor['user_id'], $config['configuration_id']);
+            // Check first to see if notifications are turned off.
+            if (!isset($option['notifications_pref']) || $option['notifications_pref'] == true) {
+                CommonService::sendEmailFromActiveUser($instructor['displayname'], $instructor['email'], $subject, $instructorMsg);
+            }
+        }
+
         if ($awardStatus == 'ACCEPTED') {
             self::sendApprovalEmailToRecipient($data['recipientId'], $data['awardTypeId']);
         }
@@ -88,11 +122,11 @@ class LearnerCtr
     static function sendApprovalEmailToRecipient($recipientId, $typeId)
     {
         global $CONTEXT;
-        $subject = "You received an award in " . $CONTEXT->title;
+        $subject = "You received a Shoutout in " . $CONTEXT->title;
         $type = self::$DAO->getAwardType($typeId);
-        $recipient = self::$commonDAO->getUserContact($recipientId);
-        $instructorMsg = "Congrats! You received an award.\n\nCourse: {$CONTEXT->title}\nAward Type: {$type['label']}";
-        CommonService::sendEmailFromActiveUser($recipient['displayname'], $recipient['email'], $subject, $instructorMsg);
+        // $recipient = self::$commonDAO->getUserContact($recipientId);
+        $instructorMsg = "Congrats! You received a Shoutout!\n\nCourse: {$CONTEXT->title}\nAward Type: {$type['label']}";
+        CommonService::sendEmailFromActiveUser(null, $recipientId, $subject, $instructorMsg);
     }
 
     /** Get received awards */

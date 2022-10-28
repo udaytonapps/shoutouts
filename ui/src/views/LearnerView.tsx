@@ -1,5 +1,6 @@
-import { WorkspacePremium } from "@mui/icons-material";
+import { Campaign } from "@mui/icons-material";
 import { Alert, Box, Button, CircularProgress } from "@mui/material";
+import { DateTime } from "luxon";
 import { useCallback, useContext, useEffect, useState } from "react";
 import BackNavigation from "../components/common/BackNavigation";
 import LearnerDashboard from "../components/LearnerDashboard";
@@ -16,6 +17,7 @@ import {
   getSentAwards,
   sendAward,
 } from "../utils/api-connector";
+import { DB_DATE_TIME_FORMAT } from "../utils/common/constants";
 import { AppContext } from "../utils/common/context";
 import {
   AwardsConfiguration,
@@ -154,7 +156,7 @@ function LearnerView() {
             <Box>
               <Box display={"flex"} justifyContent={"center"}>
                 <Button
-                  endIcon={<WorkspacePremium />}
+                  endIcon={<Campaign />}
                   size="large"
                   variant="contained"
                   onClick={handleClickSend}
@@ -225,9 +227,7 @@ function LearnerView() {
                   recipient={selectedRecipient}
                   setComment={setComment}
                   submitAward={submitAward}
-                  configuration={
-                    { comments_required: true } as AwardsConfiguration
-                  }
+                  configuration={configuration}
                 />
               </Box>
             );
@@ -239,7 +239,7 @@ function LearnerView() {
           if (selectedAward && selectedRecipient) {
             const sentAward: LearnerAward = {
               id: "",
-              createdAt: "",
+              createdAt: DateTime.now().toFormat(DB_DATE_TIME_FORMAT),
               senderName: appConfig.username,
               comment,
               label: selectedAward.label,
@@ -249,13 +249,7 @@ function LearnerView() {
             return (
               <Box>
                 <SelectionConfirm
-                  configuration={
-                    {
-                      moderation_enabled: true,
-                      anonymous_enabled: false,
-                      recipient_view_enabled: true,
-                    } as AwardsConfiguration
-                  }
+                  configuration={configuration}
                   recipient={selectedRecipient}
                   sentAward={sentAward}
                 />
