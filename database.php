@@ -4,19 +4,21 @@
 $DATABASE_UNINSTALL = array();
 
 /** Table names */
-$AWARDS_CONFIGURATION_TABLE_NAME = "{$CFG->dbprefix}awards_configuration";
-$AWARDS_INSTANCE_TABLE_NAME = "{$CFG->dbprefix}awards_instance";
-$AWARDS_TYPE_TABLE_NAME = "{$CFG->dbprefix}awards_type";
-$AWARDS_TYPE_EXCLUSION_TABLE_NAME = "{$CFG->dbprefix}awards_type_exclusion";
+$SHOUTOUTS_CONFIGURATION_TABLE_NAME = "{$CFG->dbprefix}shoutouts_configuration";
+$SHOUTOUTS_INSTANCE_TABLE_NAME = "{$CFG->dbprefix}shoutouts_instance";
+$SHOUTOUTS_TYPE_TABLE_NAME = "{$CFG->dbprefix}shoutouts_type";
+$SHOUTOUTS_INSTRUCTOR_OPTION_TABLE_NAME = "{$CFG->dbprefix}shoutouts_instructor_option";
+$SHOUTOUTS_TYPE_EXCLUSION_TABLE_NAME = "{$CFG->dbprefix}shoutouts_type_exclusion";
 
 /** Table schemas */
 
-$AWARDS_CONFIGURATION = "CREATE TABLE {$AWARDS_CONFIGURATION_TABLE_NAME} (
+$SHOUTOUTS_CONFIGURATION = "CREATE TABLE {$SHOUTOUTS_CONFIGURATION_TABLE_NAME} (
 
     /* PRIMARY KEY */
     configuration_id        INTEGER NOT NULL AUTO_INCREMENT,
     
     /* COMMON COLS */
+    user_id                 INTEGER, /* The original creator - used for notifications if not roster data exists */
     context_id              INTEGER, /* Tracked and scoped, this is the course */
     link_id                 INTEGER, /* Tracked but not scoped, this is the instance */
     created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -27,7 +29,6 @@ $AWARDS_CONFIGURATION = "CREATE TABLE {$AWARDS_CONFIGURATION_TABLE_NAME} (
     moderation_enabled      BOOLEAN NOT NULL,
     anonymous_enabled       BOOLEAN NOT NULL,
     recipient_view_enabled  BOOLEAN NOT NULL,
-    notifications_enabled   BOOLEAN NOT NULL,
     leaderboard_enabled     BOOLEAN NOT NULL,
     awarded_value           INTEGER, -- NULLABLE?
     awarded_limit           INTEGER, -- NULLABLE?
@@ -36,12 +37,11 @@ $AWARDS_CONFIGURATION = "CREATE TABLE {$AWARDS_CONFIGURATION_TABLE_NAME} (
     received_limit          INTEGER, -- NULLABLE?
     received_cooldown       INTEGER, -- NULLABLE?
 
-
     PRIMARY KEY(configuration_id)
 
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8";
 
-$AWARDS_INSTANCE = "CREATE TABLE {$AWARDS_INSTANCE_TABLE_NAME} (
+$SHOUTOUTS_INSTANCE = "CREATE TABLE {$SHOUTOUTS_INSTANCE_TABLE_NAME} (
 
     /* PRIMARY KEY */
     award_instance_id       INTEGER NOT NULL AUTO_INCREMENT,
@@ -66,7 +66,7 @@ $AWARDS_INSTANCE = "CREATE TABLE {$AWARDS_INSTANCE_TABLE_NAME} (
 
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8";
 
-$AWARDS_TYPE = "CREATE TABLE {$AWARDS_TYPE_TABLE_NAME} (
+$SHOUTOUTS_TYPE = "CREATE TABLE {$SHOUTOUTS_TYPE_TABLE_NAME} (
 
     /* PRIMARY KEY */
     award_type_id           INTEGER NOT NULL AUTO_INCREMENT,
@@ -87,7 +87,30 @@ $AWARDS_TYPE = "CREATE TABLE {$AWARDS_TYPE_TABLE_NAME} (
 
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8";
 
-$AWARDS_TYPE_EXCLUSION = "CREATE TABLE {$AWARDS_TYPE_EXCLUSION_TABLE_NAME} (
+$SHOUTOUTS_INSTRUCTOR_OPTION = "CREATE TABLE {$SHOUTOUTS_INSTRUCTOR_OPTION_TABLE_NAME} (
+
+    /* PRIMARY KEY */
+    option_id               INTEGER NOT NULL AUTO_INCREMENT,
+    
+    /* COMMON COLS */
+    user_id                 INTEGER NOT NULL, /* ID of the instructor that chose the option */
+    created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    /* TOKEN COLS */
+    configuration_id        INTEGER NOT NULL, /* FK reference to the configuration */
+    notifications_pref      BOOLEAN,
+
+    PRIMARY KEY(option_id),
+
+    CONSTRAINT `fk_shoutout_option_configuration`
+        FOREIGN KEY (`configuration_id`)
+        REFERENCES `{$SHOUTOUTS_CONFIGURATION_TABLE_NAME}` (`configuration_id`)
+        ON DELETE CASCADE
+
+) ENGINE = InnoDB DEFAULT CHARSET=utf8";
+
+$SHOUTOUTS_TYPE_EXCLUSION = "CREATE TABLE {$SHOUTOUTS_TYPE_EXCLUSION_TABLE_NAME} (
 
     /* PRIMARY KEY */
     exclusion_id            INTEGER NOT NULL AUTO_INCREMENT,
@@ -108,20 +131,21 @@ $AWARDS_TYPE_EXCLUSION = "CREATE TABLE {$AWARDS_TYPE_EXCLUSION_TABLE_NAME} (
 
 /** Table installation (if tables don't exist) */
 $DATABASE_INSTALL = array(
-    array($AWARDS_CONFIGURATION_TABLE_NAME, $AWARDS_CONFIGURATION),
-    array($AWARDS_INSTANCE_TABLE_NAME, $AWARDS_INSTANCE),
-    array($AWARDS_TYPE_TABLE_NAME, $AWARDS_TYPE),
-    array($AWARDS_TYPE_EXCLUSION_TABLE_NAME, $AWARDS_TYPE_EXCLUSION)
+    array($SHOUTOUTS_CONFIGURATION_TABLE_NAME, $SHOUTOUTS_CONFIGURATION),
+    array($SHOUTOUTS_INSTANCE_TABLE_NAME, $SHOUTOUTS_INSTANCE),
+    array($SHOUTOUTS_TYPE_TABLE_NAME, $SHOUTOUTS_TYPE),
+    array($SHOUTOUTS_INSTRUCTOR_OPTION_TABLE_NAME, $SHOUTOUTS_INSTRUCTOR_OPTION),
+    array($SHOUTOUTS_TYPE_EXCLUSION_TABLE_NAME, $SHOUTOUTS_TYPE_EXCLUSION)
 );
 
 $DATABASE_UPGRADE = function ($oldversion) {
-    global $PDOX, $AWARDS_TYPE_TABLE_NAME;
+    global $PDOX, $SHOUTOUTS_TYPE_TABLE_NAME;
     // Check if any types exist
-    $sql = "SELECT EXISTS (SELECT 1 FROM {$AWARDS_TYPE_TABLE_NAME}) as data_exists";
+    $sql = "SELECT EXISTS (SELECT 1 FROM {$SHOUTOUTS_TYPE_TABLE_NAME}) as data_exists";
     $q = $PDOX->rowDie($sql);
     if (!isset($q['data_exists']) || $q['data_exists'] != true) {
         // There are no award types in the db - default them
-        $sql = "INSERT INTO {$AWARDS_TYPE_TABLE_NAME} 
+        $sql = "INSERT INTO {$SHOUTOUTS_TYPE_TABLE_NAME} 
                     (image_url, label, short_description)
                 VALUES
                     ('/assets/cool_collaborator.png', 'Cool Collaborator', 'You’re a helpful person who makes sure everything is getting done and people have what they need. Keep it up!'),

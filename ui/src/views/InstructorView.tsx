@@ -1,24 +1,39 @@
-import { Box, Tab, Tabs, Typography } from "@mui/material";
+import { NotificationImportant, Settings } from "@mui/icons-material";
+import {
+  Alert,
+  Badge,
+  Box,
+  Button,
+  IconButton,
+  Tab,
+  Tabs,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import TabPanel from "../components/common/TabPanel";
 import HistoryTable from "../components/HistoryTable";
 import LeaderboardTable from "../components/LeaderboardTable";
 import PendingTable from "../components/PendingTable";
 import ReviewDialog from "../components/ReviewDialog";
+import SettingsDialog from "../components/SettingsDialog";
 import {
+  addSettings,
   getAllAwards,
   getAllAwardsHistory,
+  getAllAwardTypes,
   getAllPendingAwards,
-  getContextConfiguration,
-  getRoster,
-  getTsugiUsers,
+  getInstructorConfiguration,
+  getPotentialAwards,
   updateAward,
+  updateSettings,
 } from "../utils/api-connector";
 import { a11yProps, compareLastNames } from "../utils/common/helpers";
 import {
   AllAwardsTableRecord,
   AwardsConfiguration,
   AwardStatusUpdateData,
+  AwardType,
   HistoryTableRow,
   PendingTableRow,
   RequestStatus,
@@ -26,9 +41,13 @@ import {
 
 function InstructorView() {
   const [loading, setLoading] = useState(true);
-  const [configuration, setConfiguration] = useState<AwardsConfiguration>();
+  const [configuration, setConfiguration] =
+    useState<AwardsConfiguration | null>();
   const [tabPosition, setTabPosition] = useState(0);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [activeAwardTypes, setActiveAwardTypes] = useState<AwardType[]>([]);
+  const [allAwardTypes, setAllAwardTypes] = useState<AwardType[]>([]);
   const [allAwards, setAllAwards] = useState<AllAwardsTableRecord[]>([]);
   const [pendingAwards, setPendingAwards] = useState<PendingTableRow[]>([]);
   const [historyAwards, setHistoryAwards] = useState<HistoryTableRow[]>([]);
@@ -37,27 +56,39 @@ function InstructorView() {
   >();
 
   const tabs = ["AWARDED", "HISTORY"];
-  if (configuration?.moderation_enabled) {
+  // Even if moderation is turned off, will show if un-approved items will remain
+  if (configuration?.moderation_enabled || pendingAwards.length > 0) {
     tabs.unshift("PENDING");
   }
 
   useEffect(() => {
     // Retrieve the list of alerts to display
-    getContextConfiguration().then((config) => {
+    getInstructorConfiguration().then((config) => {
+      setConfiguration(config);
+      // Must retrieve limited list after
+      fetchAllAwardTypes().then(() => {
+        fetchPotentialAwards();
+      });
       if (config) {
-        setConfiguration(config);
         // Assemble the promises to run them all in parallel
         const promises = [fetchAwarded(), fetchPending(), fetchHistory()];
         // Turn off loading once all promises are settled
         Promise.allSettled(promises).then(() => {
           setLoading(false);
         });
-        getRoster().then((roster) => console.log("Roster: ", roster));
-        getTsugiUsers().then((users) => console.log("Tsugi Users: ", users));
+        // getRoster().then((roster) => console.log("Roster: ", roster));
+        // getTsugiUsers().then((users) => console.log("Tsugi Users: ", users));
       }
     });
     // The empty dependency array '[]' means this will run once, when the component renders
   }, []);
+
+  useEffect(() => {
+    // If undefined, setting data may still be loading, but if null, response was received and config doesn't exist, so open the dialog
+    if (configuration === null) {
+      setSettingsDialogOpen(true);
+    }
+  }, [configuration]);
 
   const fetchPending = async () => {
     const awards = await getAllPendingAwards();
@@ -72,6 +103,16 @@ function InstructorView() {
   const fetchHistory = async () => {
     const awards = await getAllAwardsHistory();
     setHistoryAwards(awards);
+  };
+
+  const fetchPotentialAwards = async () => {
+    const types = await getPotentialAwards();
+    setActiveAwardTypes(types);
+  };
+
+  const fetchAllAwardTypes = async () => {
+    const types = await getAllAwardTypes();
+    setAllAwardTypes(types);
   };
 
   // Tab management
@@ -119,10 +160,86 @@ function InstructorView() {
     refreshTabs();
   };
 
+  // Dialog management
+  const handleOpenSettingsDialog = () => {
+    setSettingsDialogOpen(true);
+  };
+
+  const handleCloseSettingsDialog = (event?: object, reason?: string) => {
+    const reasonsToStayOpen = ["backdropClick", "escapeKeyDown"];
+    if (reason && reasonsToStayOpen.includes(reason)) {
+      return;
+    }
+    setSettingsDialogOpen(false);
+  };
+
+  const handleSaveSettingsDialog = async (
+    newSettings: AwardsConfiguration,
+    exclusionIds: string[]
+  ) => {
+    // Need to take the new data, send the update, and fetch the new settings
+    console.log(newSettings);
+    console.log(exclusionIds); // Delete all and add each time, not updating
+    if (newSettings.configuration_id) {
+      await updateSettings(newSettings, exclusionIds);
+    } else {
+      await addSettings(newSettings, exclusionIds);
+    }
+    // Close the dialog
+    setSettingsDialogOpen(false);
+    // Fetch the new/updated settings to refresh the UI
+    const retrievedConfig = await getInstructorConfiguration();
+    if (retrievedConfig) {
+      setConfiguration(retrievedConfig);
+      const promises = [
+        fetchAwarded(),
+        fetchPending(),
+        fetchHistory(),
+        fetchPotentialAwards(),
+      ];
+      // Turn off loading once all promises are settled
+      Promise.allSettled(promises).then(() => {
+        setLoading(false);
+      });
+    }
+  };
+
   return (
     <>
       {configuration && (
         <Box>
+          {!configuration.moderation_enabled && pendingAwards.length > 0 && (
+            <Box mt={2} mb={2}>
+              <Alert severity="warning">
+                It appears you toggled moderation off but have pending requests
+                that were submitted while moderation was active. The 'Pending'
+                tab will remain until moderation action is taken on any
+                remaining items.
+              </Alert>
+            </Box>
+          )}
+          <Box display={"flex"} justifyContent={"end"} mr={1}>
+            <Box>
+              <Tooltip
+                title={
+                  pendingAwards.length
+                    ? "There are pending requests requiring review"
+                    : ""
+                }
+              >
+                <IconButton onClick={() => setTabPosition(0)}>
+                  <Badge badgeContent={pendingAwards.length} color="warning">
+                    <NotificationImportant />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Review or update 'Shoutouts!' settings">
+                <IconButton onClick={handleOpenSettingsDialog}>
+                  <Settings />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
           <Box pt={6} sx={{ borderBottom: 1, borderColor: "divider" }}>
             <Tabs
               value={tabPosition}
@@ -192,6 +309,15 @@ function InstructorView() {
           />
         </Box>
       )}
+      {/* DIALOGS */}
+      <SettingsDialog
+        handleClose={handleCloseSettingsDialog}
+        handleSave={handleSaveSettingsDialog}
+        open={settingsDialogOpen}
+        settings={configuration || null}
+        potentialTypes={activeAwardTypes}
+        allTypes={allAwardTypes}
+      />
     </>
   );
 }

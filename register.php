@@ -1,10 +1,10 @@
 <?php
 
 $REGISTER_LTI2 = array(
-    "name" => "Shout-Out!",
-    "FontAwesome" => "fa-medal",
-    "short_name" => "Shout-Out!",
-    "description" => "Give and receive shout-outs for exceptional contributions.",
+    "name" => "Shoutouts!",
+    "FontAwesome" => "fa-bullhorn",
+    "short_name" => "Shoutouts!",
+    "description" => "Give and receive shoutouts for exceptional contributions.",
     "messages" => array("launch", "launch_grade"),
     "license" => "Apache",
     "languages" => array(

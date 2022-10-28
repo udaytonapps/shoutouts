@@ -41,7 +41,10 @@ export default function LearnerDashboard(props: LearnerDashboardProps) {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [awardToReview, setAwardToReview] = useState<SentAward>();
 
-  const tabs = ["RECEIVED", "SENT"];
+  const tabs = ["SENT"];
+  if (configuration.recipient_view_enabled) {
+    tabs.unshift("RECEIVED");
+  }
   if (configuration.leaderboard_enabled) {
     tabs.push("LEADERBOARD");
   }

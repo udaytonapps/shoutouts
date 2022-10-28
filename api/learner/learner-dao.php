@@ -17,10 +17,11 @@ class LearnerDAO
         $this->p = $CFG->dbprefix;
         $this->alertTable = $CFG->dbprefix . "template_alert";
         $this->commentTable = $CFG->dbprefix . "template_comment";
-        $this->awardConfigurationTable = $CFG->dbprefix . "awards_configuration";
-        $this->awardInstanceTable = $CFG->dbprefix . "awards_instance";
-        $this->awardTypeTable = $CFG->dbprefix . "awards_type";
-        $this->awardTypeExclusionsTable = $CFG->dbprefix . "awards_type_exclusion";
+        $this->awardConfigurationTable = $CFG->dbprefix . "shoutouts_configuration";
+        $this->awardInstanceTable = $CFG->dbprefix . "shoutouts_instance";
+        $this->awardTypeTable = $CFG->dbprefix . "shoutouts_type";
+        $this->awardTypeExclusionsTable = $CFG->dbprefix . "shoutouts_type_exclusion";
+        $this->awardInstructorOption = $CFG->dbprefix . "shoutouts_instructor_option";
         $this->PDOX = $PDOX;
     }
 
@@ -106,7 +107,7 @@ class LearnerDAO
         WHERE (t.context_id = :contextId OR t.context_id IS NULL)
         AND t.is_active = 1
         AND e.exclusion_id IS NULL
-        ORDER BY t.label DESC;";
+        ORDER BY t.label ASC;";
         $arr = array(':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
     }
@@ -121,7 +122,7 @@ class LearnerDAO
                             atype.image_url as imageUrl,
                             atype.label as label,
                             atype.short_description as 'description',
-                            (SELECT DISTINCT displayname FROM {$this->p}lti_user WHERE user_id = ai.sender_id) as `senderName`
+                            (SELECT displayname FROM {$this->p}lti_user WHERE user_id = ai.sender_id) as `senderName`
                 FROM {$this->awardInstanceTable} ai
         INNER JOIN {$this->awardTypeTable} atype
             ON atype.award_type_id = ai.award_type_id
@@ -140,8 +141,8 @@ class LearnerDAO
                             ai.created_at as `createdAt`,
                             ai.updated_at as `updatedAt`,
                             ai.award_status as `status`,
-                            (SELECT DISTINCT displayname FROM {$this->p}lti_user WHERE user_id = ai.sender_id) as `senderName`,
-                            (SELECT DISTINCT displayname FROM {$this->p}lti_user WHERE ai.recipient_id = email) as `recipientName`,
+                            (SELECT displayname FROM {$this->p}lti_user WHERE user_id = ai.sender_id) as `senderName`,
+                            (SELECT displayname FROM {$this->p}lti_user WHERE ai.recipient_id = email) as `recipientName`,
                             atype.image_url as imageUrl,
                             atype.label as label,
                             atype.short_description as 'description'
@@ -157,19 +158,27 @@ class LearnerDAO
     public function getLeaderboardLeaders($contextId, $limit)
     {
         // These are being aliased to camelCase - may or may not be really necessary
-        $query = "SELECT DISTINCT u.email as `email`,
-                            u.displayname as `displayname`,
-                            (SELECT COUNT(*) 
-                                FROM  {$this->awardInstanceTable} iai
-                                WHERE iai.context_id = :contextId
-                                    AND u.email = iai.recipient_id
-                                    AND iai.award_status = 'ACCEPTED'
-                            ) as `count`
+        $query = "SELECT DISTINCT   u.email as `email`,
+                                    u.displayname as `displayname`,
+                                    (SELECT COUNT(*) 
+                                        FROM  {$this->awardInstanceTable} iai
+                                        WHERE iai.context_id = :contextId
+                                            AND u.email = iai.recipient_id
+                                            AND iai.award_status = 'ACCEPTED'
+                                    ) as `receivedCount`
         FROM {$this->p}lti_user u
         INNER JOIN {$this->awardInstanceTable} ai
             ON ai.recipient_id = u.email
-        WHERE ai.context_id = :contextId AND ai.award_status = 'ACCEPTED' ORDER BY `count` DESC LIMIT {$limit}";
+        WHERE ai.context_id = :contextId AND ai.award_status = 'ACCEPTED' ORDER BY `receivedCount` DESC LIMIT {$limit}";
         $arr = array(':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
+    }
+
+    public function getInstructorNotificationOption($instructorId, $configurationId)
+    {
+        $query = "SELECT * FROM {$this->awardInstructorOption}
+        WHERE user_id = :userId AND configuration_id = :configurationId";
+        $arr = array('userId' => $instructorId, ':configurationId' => $configurationId);
+        return $this->PDOX->rowDie($query, $arr);
     }
 }

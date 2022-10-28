@@ -1,4 +1,3 @@
-import { Campaign } from "@mui/icons-material";
 import { Box, Typography } from "@mui/material";
 
 interface HeaderProps {}
