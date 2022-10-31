@@ -7,16 +7,73 @@ import {
   GetCourseAlertsResponse,
   TemplateComment,
   GetCourseCommentsResponse,
+  LearnerAward,
+  GetLearnerAwardResponse,
+  Recipient,
+  GetRecipientResponse,
+  AwardType,
+  GetPotentialAwardResponse,
+  AwardsConfiguration,
+  GetContextConfigurationResponse,
+  SentAward,
+  GetSentAwardsResponse,
+  LeaderboardLeader,
+  GetLeaderboardResponse,
+  GetAllAwardsResponse,
+  PendingTableRow,
+  HistoryTableRow,
+  GetHistoryResponse,
+  GetPendingAwardsResponse,
+  AwardStatusUpdateData,
 } from "./types";
 
 const config = EnvConfig[getEnvironment()];
+
+export const getTsugiUsers = async (): Promise<any> => {
+  try {
+    const res = await axios.get<GetInfoResponse>(
+      `${config.apiUrl}/tsugi-users?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    if (typeof e === "string") {
+      return e;
+    } else {
+      return null;
+    }
+  }
+};
+
+export const getRoster = async (): Promise<any> => {
+  try {
+    const res = await axios.get<GetInfoResponse>(
+      `${config.apiUrl}/roster?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    if (typeof e === "string") {
+      return e;
+    } else {
+      return null;
+    }
+  }
+};
 
 export const getInfo = async (): Promise<LtiAppInfo | string | null> => {
   try {
     const res = await axios.get<GetInfoResponse>(
       `${config.apiUrl}/info?PHPSESSID=${config.sessionId}`
     );
-    return typeof res.data === "string" ? res.data : res.data.data;
+    if (typeof res.data === "string") {
+      // A warning may have come back. Try to parse the info, if that part succeeded.
+      const jsonString = (res.data as any).match(/{(.*)}/g)[0];
+      const jsonResponse = JSON.parse(jsonString);
+      return jsonResponse.data;
+    } else {
+      return res.data.data;
+    }
   } catch (e) {
     console.error(e);
     if (typeof e === "string") {
@@ -28,6 +85,19 @@ export const getInfo = async (): Promise<LtiAppInfo | string | null> => {
 };
 
 /** INSTRUCTOR */
+
+export const getInstructorConfiguration =
+  async (): Promise<AwardsConfiguration | null> => {
+    try {
+      const res = await axios.get<GetContextConfigurationResponse>(
+        `${config.apiUrl}/instructor/configuration?PHPSESSID=${config.sessionId}`
+      );
+      return res.data.data || null;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
 
 export const addAlert = async (alert: TemplateAlert): Promise<void> => {
   try {
@@ -55,7 +125,122 @@ export const deleteAlert = async (alertId: string): Promise<void> => {
   }
 };
 
+export const addSettings = async (
+  configuration: AwardsConfiguration,
+  exclusionIds: string[]
+): Promise<void> => {
+  try {
+    const body = {
+      configuration,
+      exclusionIds,
+    };
+    await axios.post<ApiResponse>(
+      `${config.apiUrl}/instructor/configuration?PHPSESSID=${config.sessionId}`,
+      body
+    );
+    return;
+  } catch (e) {
+    console.error(e);
+    return;
+  }
+};
+
+export const updateSettings = async (
+  configuration: AwardsConfiguration,
+  exclusionIds: string[]
+): Promise<void> => {
+  try {
+    const body = {
+      configuration,
+      exclusionIds,
+    };
+    await axios.put<ApiResponse>(
+      `${config.apiUrl}/instructor/configuration?PHPSESSID=${config.sessionId}`,
+      body
+    );
+    return;
+  } catch (e) {
+    console.error(e);
+    return;
+  }
+};
+
+export const getAllPendingAwards = async (): Promise<PendingTableRow[]> => {
+  try {
+    const res = await axios.get<GetPendingAwardsResponse>(
+      `${config.apiUrl}/instructor/pending?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const getAllAwards = async (): Promise<LeaderboardLeader[]> => {
+  try {
+    const res = await axios.get<GetAllAwardsResponse>(
+      `${config.apiUrl}/instructor/awards?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const getAllAwardsHistory = async (): Promise<HistoryTableRow[]> => {
+  try {
+    const res = await axios.get<GetHistoryResponse>(
+      `${config.apiUrl}/instructor/history?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const updateAward = async (updateData: AwardStatusUpdateData) => {
+  try {
+    const body = updateData;
+    await axios.put<ApiResponse>(
+      `${config.apiUrl}/instructor/awards?PHPSESSID=${config.sessionId}`,
+      body
+    );
+    return;
+  } catch (e) {
+    console.error(e);
+    return;
+  }
+};
+
+export const getAllAwardTypes = async (): Promise<AwardType[]> => {
+  try {
+    const res = await axios.get<GetPotentialAwardResponse>(
+      `${config.apiUrl}/instructor/award-types?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
 /** LEARNER */
+
+export const getContextConfiguration =
+  async (): Promise<AwardsConfiguration | null> => {
+    try {
+      const res = await axios.get<GetContextConfigurationResponse>(
+        `${config.apiUrl}/learner/configuration?PHPSESSID=${config.sessionId}`
+      );
+      return res.data.data || null;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
 
 export const getCourseAlerts = async (): Promise<TemplateAlert[]> => {
   try {
@@ -92,5 +277,83 @@ export const getCourseComments = async (): Promise<TemplateComment[]> => {
   } catch (e) {
     console.error(e);
     return [];
+  }
+};
+
+export const getRecipients = async (): Promise<Recipient[]> => {
+  try {
+    const res = await axios.get<GetRecipientResponse>(
+      `${config.apiUrl}/learner/recipients?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const getLearnerAwards = async (): Promise<LearnerAward[]> => {
+  try {
+    const res = await axios.get<GetLearnerAwardResponse>(
+      `${config.apiUrl}/learner/received?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const getSentAwards = async (): Promise<SentAward[]> => {
+  try {
+    const res = await axios.get<GetSentAwardsResponse>(
+      `${config.apiUrl}/learner/sent?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const getLeaderboard = async (): Promise<LeaderboardLeader[]> => {
+  try {
+    const res = await axios.get<GetLeaderboardResponse>(
+      `${config.apiUrl}/learner/leaderboard?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const getPotentialAwards = async (): Promise<AwardType[]> => {
+  try {
+    const res = await axios.get<GetPotentialAwardResponse>(
+      `${config.apiUrl}/learner/award-types?PHPSESSID=${config.sessionId}`
+    );
+    return res.data.data || [];
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+export const sendAward = async (
+  recipientId: string,
+  awardTypeId: string,
+  comment?: string
+): Promise<void> => {
+  try {
+    const body = { recipientId, awardTypeId, comment };
+    await axios.post<ApiResponse>(
+      `${config.apiUrl}/learner/awards?PHPSESSID=${config.sessionId}`,
+      body
+    );
+    return;
+  } catch (e) {
+    console.error(e);
+    return;
   }
 };

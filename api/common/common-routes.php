@@ -20,6 +20,16 @@ AppRouter::add('/info', function () {
     return AppRouter::sendJson($res);
 }, 'get');
 
+AppRouter::add('/roster', function () {
+    $res = CommonService::roster();
+    return AppRouter::sendJson($res);
+}, 'get');
+
+AppRouter::add('/tsugi-users', function () {
+    $res = CommonCtr::getTsugiUsers();
+    return AppRouter::sendJson($res);
+}, 'get');
+
 AppRouter::pathNotFound(function ($info) {
     echo AppRouter::handleDefaultRequest();
 });
