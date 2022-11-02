@@ -149,7 +149,7 @@ class InstructorDAO
         $received_value
     ) {
         $query = "INSERT INTO {$this->awardConfigurationTable} (user_id, context_id, link_id, anonymous_enabled, comments_required, leaderboard_enabled, moderation_enabled, recipient_view_enabled, awarded_value, received_value)
-        VALUES (:userIdd, :contextId, :linkId, :anonymous_enabled, :comments_required, :leaderboard_enabled, :moderation_enabled, :recipient_view_enabled, :awarded_value, :received_value);";
+        VALUES (:userId, :contextId, :linkId, :anonymous_enabled, :comments_required, :leaderboard_enabled, :moderation_enabled, :recipient_view_enabled, :awarded_value, :received_value);";
         $arr = array(
             ':userId' => $userId,
             ':contextId' => $contextId,
