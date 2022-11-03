@@ -102,11 +102,12 @@ class LearnerDAO
                             t.label as `label`,
                             t.short_description as `description`
         FROM {$this->awardTypeTable} t
-        LEFT OUTER JOIN {$this->awardTypeExclusionsTable} e
-        ON t.award_type_id = e.award_type_id AND e.context_id = :contextId
-        WHERE (t.context_id = :contextId OR t.context_id IS NULL)
+        WHERE t.award_type_id NOT IN (
+            SELECT e.award_type_id FROM {$this->awardTypeExclusionsTable} e
+            WHERE e.context_id = :contextId
+        )
+        AND (t.context_id = :contextId OR t.context_id IS NULL)
         AND t.is_active = 1
-        AND e.exclusion_id IS NULL
         ORDER BY t.label ASC;";
         $arr = array(':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
