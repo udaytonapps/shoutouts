@@ -159,7 +159,12 @@ class InstructorCtr
             self::$DAO->addNotificationOption(self::$user->id, $newConfigId, $config['notifications_enabled']);
             // assign type exclusions related to the configuration
             foreach ($exclusionIds as $typeId) {
-                self::$DAO->addTypeExclusion($newConfigId, $typeId);
+                self::$DAO->addTypeExclusion(
+                    self::$contextId,
+                    self::$linkId,
+                    $newConfigId,
+                    $typeId
+                );
             }
         }
         return $newConfigId;
@@ -216,7 +221,12 @@ class InstructorCtr
         self::$DAO->deleteTypeExclusions($config['configuration_id']);
         // assign type exclusions related to the configuration
         foreach ($exclusionIds as $typeId) {
-            self::$DAO->addTypeExclusion($config['configuration_id'], $typeId);
+            self::$DAO->addTypeExclusion(
+                self::$contextId,
+                self::$linkId,
+                $config['configuration_id'],
+                $typeId
+            );
         }
 
         $notificationsPref = $config['notifications_enabled'];
