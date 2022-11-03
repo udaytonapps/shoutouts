@@ -14,6 +14,7 @@ class InstructorDAO
     {
         global $CFG, $PDOX;
 
+        $this->p = $CFG->dbprefix;
         $this->alertTable = $CFG->dbprefix . "template_alert";
         $this->commentTable = $CFG->dbprefix . "template_comment";
         $this->awardConfigurationTable = $CFG->dbprefix . "shoutouts_configuration";
@@ -80,8 +81,8 @@ class InstructorDAO
                             ai.created_at as `createdAt`,
                             ai.updated_at as `updatedAt`,
                             ai.award_status as `status`,
-                            (SELECT displayName from {$this->p}lti_user WHERE user_id = ai.sender_id) as `senderName`,
-                            (SELECT displayName from {$this->p}lti_user WHERE email = ai.recipient_id) as `recipientName`,
+                            (SELECT displayName from {$this->p}lti_user WHERE user_id = ai.sender_id LIMIT 1) as `senderName`,
+                            (SELECT displayName from {$this->p}lti_user WHERE email = ai.recipient_id LIMIT 1) as `recipientName`,
                             atype.image_url as imageUrl,
                             atype.label as label,
                             atype.short_description as 'description'
@@ -102,8 +103,8 @@ class InstructorDAO
                             ai.created_at as `createdAt`,
                             ai.updated_at as `updatedAt`,
                             ai.award_status as `status`,
-                            (SELECT displayName from {$this->p}lti_user WHERE user_id = ai.sender_id) as `senderName`,
-                            (SELECT displayName from {$this->p}lti_user WHERE email = ai.recipient_id) as `recipientName`,
+                            (SELECT displayName from {$this->p}lti_user WHERE user_id = ai.sender_id LIMIT 1) as `senderName`,
+                            (SELECT displayName from {$this->p}lti_user WHERE email = ai.recipient_id LIMIT 1) as `recipientName`,
                             atype.image_url as imageUrl,
                             atype.label as label,
                             atype.short_description as 'description'
@@ -225,11 +226,11 @@ class InstructorDAO
         return $this->PDOX->rowDie($query, $arr);
     }
 
-    public function addTypeExclusion($configurationId, $typeId)
+    public function addTypeExclusion($contextId, $linkId, $configurationId, $typeId)
     {
-        $query = "INSERT INTO {$this->awardTypeExclusionsTable} (configuration_id, award_type_id)
-        VALUES (:configurationId, :typeId);";
-        $arr = array(':configurationId' => $configurationId, ':typeId' => $typeId);
+        $query = "INSERT INTO {$this->awardTypeExclusionsTable} (context_id, link_id, configuration_id, award_type_id)
+        VALUES (:contextId, :linkId, :configurationId, :typeId);";
+        $arr = array(':contextId' => $contextId, ':linkId' => $linkId,':configurationId' => $configurationId, ':typeId' => $typeId);
         $this->PDOX->queryDie($query, $arr);
         return $this->PDOX->lastInsertId();
     }
