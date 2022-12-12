@@ -81,7 +81,10 @@ export interface AwardType {
 }
 
 export interface Recipient {
-  userId: string;
+  /** Will be sourceId, if roster exists - userId otherwise */
+  recipientId: string;
+  /** Will be null if a roster is used */
+  userId?: string;
   givenName: string;
   familyName: string;
   lastFirst: string;
