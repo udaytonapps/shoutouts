@@ -1,6 +1,5 @@
 import { AppInfo } from "../types";
-import { getSessionId } from "./helpers";
-import { CraEnvironment, LtiSessionConfig } from "./types";
+import { CraEnvironment, DecoratedWindow, LtiSessionConfig } from "./types";
 
 /** For use during local development for two reasons.
  * 1. Since you cannot retrieve the sessionId from the react server
@@ -11,8 +10,8 @@ export const APP_INFO_OVERRIDES: Partial<AppInfo> = {
   // contextId: "",
   // isInstructor: true,
   // linkId: "",
-  // sessionId: "56964e0052de1db3b61ebf796ffed648", // Learner session
-  sessionId: "974808f85da6f94494aa93b89c9d1f82", // Instructor session
+  sessionId: "ed03c99420b986f103021e4f179ec8fc", // Learner session
+  // sessionId: "0d09da738262ffd460e6e0830f9b3664", // Instructor session
   // username: "",
   // darkMode: true,
   // baseColor: "#6B5B95", // DRK PRPL
@@ -21,7 +20,8 @@ export const APP_INFO_OVERRIDES: Partial<AppInfo> = {
   // baseColor: "#B3ADFF", // LIGHT BLUE
 };
 
-const sessionId = getSessionId();
+const appConfig = (window as DecoratedWindow).appConfig || null;
+const sessionId = appConfig?.sessionId || "";
 
 export const EnvConfig: Record<CraEnvironment, LtiSessionConfig> = {
   pre_build: {
