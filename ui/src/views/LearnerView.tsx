@@ -128,13 +128,12 @@ function LearnerView() {
     setStage("SELECT_RECIPIENT");
   };
 
-  const submitAward = () => {
+  const submitAward = async () => {
     if (selectedRecipient && selectedAward) {
-      sendAward(selectedRecipient.userId, selectedAward.id, comment).then(
-        () => {
-          setStage("CONFIRM");
-        }
-      );
+      setLoading(true);
+      await sendAward(selectedRecipient.recipientId, selectedAward.id, comment);
+      setLoading(false);
+      setStage("CONFIRM");
     }
   };
 
@@ -223,6 +222,7 @@ function LearnerView() {
                   }}
                 />
                 <SelectionForm
+                  loading={loading}
                   selectedAward={selectedAward}
                   recipient={selectedRecipient}
                   setComment={setComment}
