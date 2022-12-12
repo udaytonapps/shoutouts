@@ -133,7 +133,20 @@ class LearnerCtr
     static function getReceivedApprovedCourseAwards()
     {
         $config = self::getContextConfiguration();
-        $res = self::$DAO->getReceivedApprovedCourseAwards(self::$user->email, self::$contextId);
+        $recipientId = 0;
+        // Roster condition
+        if (CommonService::$hasRoster) {
+            // If there is a roster, learner list will be populated from it (such as when launched from LMS)
+            foreach (CommonService::$rosterData as $learner) {
+                if ($learner["role"] == 'Learner' && self::$user->key == $learner['user_id']) {
+                    $recipientId = $learner['person_sourcedid'];
+                }
+            }
+        } else {
+            $recipientId = self::$user->id;
+        }
+
+        $res = self::$DAO->getReceivedApprovedCourseAwards($recipientId, self::$contextId);
         if ($config['anonymous_enabled']) {
             foreach ($res as &$award) {
                 $award['senderName'] = null;
@@ -147,6 +160,19 @@ class LearnerCtr
     static function getSentCourseAwards()
     {
         $sentAwards = self::$DAO->getSentCourseAwards(self::$user->id, self::$contextId);
+
+        // If there is a roster, displayname here will be null as it couldn't be looked up
+        if (CommonService::$hasRoster) {
+            // If there is a roster, learner displayName will be populated from it (such as when launched from LMS)
+            foreach (CommonService::$rosterData as $learner) {
+                foreach ($sentAwards as &$request) {
+                    if ($learner["role"] == 'Learner' && isset($request['recipientId']) && $request['recipientId'] == $learner['person_sourcedid']) {
+                        $request['recipientName'] = $learner["person_name_given"] . ' ' . $learner["person_name_family"];
+                    }
+                }
+            }
+        }
+
         foreach ($sentAwards as &$award) {
             if (isset($award['approved']) && $award['approved'] == 0) {
                 $award['approved'] = false;
@@ -185,13 +211,14 @@ class LearnerCtr
         if (CommonService::$hasRoster) {
             // If there is a roster, learner list will be populated from it (such as when launched from LMS)
             foreach (CommonService::$rosterData as $learner) {
-                if ($learner["role"] == 'Learner') {
+                if ($learner["role"] == 'Learner' && self::$user->key != $learner['user_id']) {
                     // Using the user email instead of user_id
                     $user = array(
-                        'userId' => $learner["user_email"],
+                        'userId' => null,
                         'givenName' => $learner["person_name_given"],
                         'familyName' => $learner["person_name_family"],
-                        'lastFirst' => $learner["person_name_family"] . ', ' . $learner["person_name_given"]
+                        'lastFirst' => $learner["person_name_family"] . ', ' . $learner["person_name_given"],
+                        'recipientId' => $learner["person_sourcedid"]
                     );
                     array_push($recipientList, $user);
                 }
@@ -209,10 +236,11 @@ class LearnerCtr
                         $givenName = "";
                     }
                     $user = array(
-                        'userId' => $tsugiUser['email'],
+                        'userId' => $tsugiUser['user_id'],
                         'givenName' => $givenName,
                         'familyName' => $familyName,
-                        'lastFirst' => $familyName . ', ' . $givenName
+                        'lastFirst' => $familyName . ', ' . $givenName,
+                        'recipientId' => $tsugiUser['user_id']
                     );
                     array_push($recipientList, $user);
                 }
@@ -223,6 +251,33 @@ class LearnerCtr
 
     /** Get enabled award types */
     static function getLeaderboard()
+    {
+        $config = self::getContextConfiguration();
+        if ($config['leaderboard_enabled']) {
+            // 5 for now, can be configurable if needed
+            $leaders = self::$DAO->getLeaderboardLeaders(self::$contextId, 5);
+            // Then loop over leaders and get their awards
+            foreach ($leaders as &$leader) {
+                if (CommonService::$hasRoster) {
+                    // If there is a roster, learner list will be populated from it (such as when launched from LMS)
+                    foreach (CommonService::$rosterData as $learner) {
+                        if ($learner["role"] == 'Learner' && isset($leader['recipient_id']) && $leader['recipient_id'] == $learner['person_sourcedid']) {
+                            $leader['familyName'] = $learner["person_name_family"];
+                            $leader['givenName'] = $learner["person_name_given"];
+                            $leader['lastFirst'] = $learner["person_name_family"] . ', ' . $learner["person_name_given"];
+                        }
+                    }
+                }
+                $leader['awards'] = self::$DAO->getReceivedApprovedCourseAwards($leader['recipient_id'], self::$contextId);
+            }
+            return $leaders;
+        } else {
+            return array();
+        }
+    }
+
+    /** Get enabled award types */
+    static function getLeaderboardOLD()
     {
         $config = self::getContextConfiguration();
         if ($config['leaderboard_enabled']) {

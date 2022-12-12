@@ -51,6 +51,45 @@ class InstructorCtr
     /** Get enabled award types */
     static function getAllAwards()
     {
+        $awards = self::$DAO->getAllAwards(self::$contextId);
+        $leaders = array();
+        
+        // Need to consider roster
+        if (CommonService::$hasRoster) {
+            // If there is a roster, learner displayName will be populated from it (such as when launched from LMS)
+
+            foreach (CommonService::$rosterData as $learner) {
+                if ($learner["role"] == 'Learner') {
+                    // get basic learner info
+                    $contactInfo = CommonService::getUserContactByRosterId($learner['user_id']);
+                    $tsugiUserId = $contactInfo['user_id'] ?? null;
+
+                    // sent count, received count, etc.
+                    $learnerData = self::$DAO->getUserAwardInfo(self::$contextId, $tsugiUserId, $learner['person_sourcedid']);
+
+                    // format displayname... 
+                    $leader = array(
+                        'awards' => self::$learnerDAO->getReceivedApprovedCourseAwards($learner['person_sourcedid'], self::$contextId),
+                        'userId' => $tsugiUserId,
+                        'sentCount' => $learnerData['sent_count'] ?? 0,
+                        'receivedCount' => $learnerData['received_count'] ?? 0,
+                        'givenName' => $learner['person_name_given'],
+                        'familyName' => $learner['person_name_family'],
+                        'lastFirst' => $learner['person_name_family'] . ', ' . $learner['person_name_given'],
+                        'data' => $learnerData
+                    );
+                    array_push($leaders, $leader);
+                }
+            }
+        }
+        return $leaders;
+    }
+
+    /** Get enabled award types */
+    static function getAllAwardsOLD()
+    {
+        // Need to consider roster
+
         $leaders = self::$DAO->getAllAwards(self::$contextId);
         // Then loop over leaders and get their awards
         foreach ($leaders as &$leader) {
@@ -72,6 +111,19 @@ class InstructorCtr
     static function getAwardsHistory()
     {
         $awards = self::$DAO->getAwardsHistory(self::$contextId);
+
+        // If there is a roster, displayname here will be null as it couldn't be looked up
+        if (CommonService::$hasRoster) {
+            // If there is a roster, learner displayName will be populated from it (such as when launched from LMS)
+            foreach (CommonService::$rosterData as $learner) {
+                foreach ($awards as &$request) {
+                    if ($learner["role"] == 'Learner' && isset($request['recipientId']) && $request['recipientId'] == $learner['person_sourcedid']) {
+                        $request['recipientName'] = $learner["person_name_given"] . ' ' . $learner["person_name_family"];
+                    }
+                }
+            }
+        }
+
         foreach ($awards as &$award) {
             // Sender
             $names = explode(" ", $award['senderName']);
@@ -94,7 +146,37 @@ class InstructorCtr
     /** Get pending awards */
     static function getPendingAwards()
     {
-        return self::$DAO->getPendingAwards(self::$contextId);
+        $awards = self::$DAO->getPendingAwards(self::$contextId);
+
+        // If there is a roster, displayname here will be null as it couldn't be looked up
+        if (CommonService::$hasRoster) {
+            // If there is a roster, learner displayName will be populated from it (such as when launched from LMS)
+            foreach (CommonService::$rosterData as $learner) {
+                foreach ($awards as &$request) {
+                    if ($learner["role"] == 'Learner' && isset($request['recipientId']) && $request['recipientId'] == $learner['person_sourcedid']) {
+                        $request['recipientName'] = $learner["person_name_given"] . ' ' . $learner["person_name_family"];
+                    }
+                }
+            }
+        }
+
+        foreach ($awards as &$award) {
+            // Sender
+            $names = explode(" ", $award['senderName']);
+            if (count($names) > 1) {
+                $award['senderName'] = $names[1] . ', ' . $names[0];
+            } else {
+                $award['senderName'] = $award[0];
+            }
+            // Recipient
+            $names = explode(" ", $award['recipientName']);
+            if (count($names) > 1) {
+                $award['recipientName'] = $names[1] . ', ' . $names[0];
+            } else {
+                $award['recipientName'] = $award[0];
+            }
+        }
+        return $awards;
     }
 
     static function updateAward($data)
