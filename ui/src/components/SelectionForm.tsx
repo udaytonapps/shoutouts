@@ -10,7 +10,8 @@ interface SelectionFormProps {
   recipient: Recipient;
   configuration: AwardsConfiguration;
   setComment: Dispatch<SetStateAction<string>>;
-  submitAward: () => void;
+  submitAward: () => Promise<void>;
+  loading: boolean;
 }
 
 interface CommentForm {
@@ -19,8 +20,14 @@ interface CommentForm {
 
 /** Show basic header info */
 export default function SelectionForm(props: SelectionFormProps) {
-  const { selectedAward, recipient, configuration, setComment, submitAward } =
-    props;
+  const {
+    selectedAward,
+    recipient,
+    configuration,
+    setComment,
+    submitAward,
+    loading,
+  } = props;
   const [open, setOpen] = useState(false);
 
   const confirmationMessage = `Are you sure you want to send the '${selectedAward.label}' badge to ${recipient.givenName} ${recipient.familyName}?`;
@@ -50,8 +57,8 @@ export default function SelectionForm(props: SelectionFormProps) {
     setOpen(false);
   };
 
-  const handleConfirmDialog = () => {
-    submitAward();
+  const handleConfirmDialog = async () => {
+    await submitAward();
     setOpen(false);
   };
 
@@ -100,6 +107,7 @@ export default function SelectionForm(props: SelectionFormProps) {
       </Box>
       {/* DIALOG */}
       <ConfirmationDialog
+        loading={loading}
         handleClose={handleCloseDialog}
         handleConfirm={handleConfirmDialog}
         open={open}

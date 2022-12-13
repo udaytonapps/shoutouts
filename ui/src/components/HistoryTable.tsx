@@ -54,10 +54,6 @@ function HistoryTable(props: HistoryTableProps) {
   );
 
   useEffect(() => {
-    // Prepare data for the table format (to ensure proper sorting)
-    rows.forEach((row) => {
-      row.status = row.status === "SUBMITTED" ? "PENDING" : row.status;
-    });
     setFilteredRows(rows);
   }, [rows]);
 

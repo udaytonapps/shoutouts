@@ -47,28 +47,33 @@ class InstructorDAO
     /** Retrieves the leaderboard for the given context */
     public function getAllAwards($contextId)
     {
-        // These are being aliased to camelCase - may or may not be really necessary
-        $query = "SELECT DISTINCT   u.user_id as `userId`,
-                                    u.displayname as `displayname`,
-                                    u.email as `email`,
-                                    (SELECT COUNT(*) 
-                                        FROM  {$this->awardInstanceTable} iai
-                                        WHERE iai.context_id = :contextId
-                                            AND u.email = iai.recipient_id
-                                            AND iai.award_status = 'ACCEPTED'
-                                    ) as `receivedCount`,
-                                    (SELECT COUNT(*) 
-                                        FROM  {$this->awardInstanceTable} iai
-                                        WHERE iai.context_id = :contextId
-                                            AND u.user_id = iai.sender_id
-                                            AND iai.award_status = 'ACCEPTED'
-                                    ) as `sentCount`
-        FROM {$this->p}lti_user u
-        INNER JOIN {$this->awardInstanceTable} ai
-            ON ai.recipient_id = u.email OR ai.sender_id = u.user_id
-        WHERE ai.context_id = :contextId ORDER BY `receivedCount` DESC";
+        $query = "SELECT *, (SELECT DISTINCT displayname FROM {$this->p}lti_user WHERE ai.recipient_id = user_id) as 'displayname'
+        FROM {$this->awardInstanceTable} ai
+        WHERE ai.context_id = :contextId";
         $arr = array(':contextId' => $contextId);
         return $this->PDOX->allRowsDie($query, $arr);
+    }
+
+    public function getUserAwardInfo($contextId, $userId, $recipientId)
+    {
+        $query = "SELECT ai.recipient_id as userId,
+                    (SELECT DISTINCT displayname FROM {$this->p}lti_user WHERE ai.recipient_id = user_id) as 'displayname',
+                    (SELECT COUNT(*)
+                        FROM  {$this->awardInstanceTable} iai1
+                        WHERE iai1.context_id = :contextId
+                            AND iai1.recipient_id = :recipientId
+                            AND iai1.award_status = 'ACCEPTED'
+                    ) as `received_count`,
+                    (SELECT COUNT(*) 
+                        FROM  {$this->awardInstanceTable} iai2
+                        WHERE iai2.context_id = :contextId
+                            AND :userId = iai2.sender_id
+                            AND iai2.award_status = 'ACCEPTED'
+                    ) as `sent_count`
+        FROM {$this->awardInstanceTable} ai
+        WHERE ai.context_id = :contextId GROUP BY recipient_id";
+        $arr = array(':contextId' => $contextId, ':userId' => $userId, ':recipientId' => $recipientId);
+        return $this->PDOX->rowDie($query, $arr);
     }
 
     /** Retrieves awards history for a given context (course) */
@@ -81,6 +86,7 @@ class InstructorDAO
                             ai.created_at as `createdAt`,
                             ai.updated_at as `updatedAt`,
                             ai.award_status as `status`,
+                            ai.recipient_id as `recipientId`,
                             (SELECT displayName from {$this->p}lti_user WHERE user_id = ai.sender_id LIMIT 1) as `senderName`,
                             (SELECT displayName from {$this->p}lti_user WHERE email = ai.recipient_id LIMIT 1) as `recipientName`,
                             atype.image_url as imageUrl,
@@ -103,6 +109,7 @@ class InstructorDAO
                             ai.created_at as `createdAt`,
                             ai.updated_at as `updatedAt`,
                             ai.award_status as `status`,
+                            ai.recipient_id as `recipientId`,
                             (SELECT displayName from {$this->p}lti_user WHERE user_id = ai.sender_id LIMIT 1) as `senderName`,
                             (SELECT displayName from {$this->p}lti_user WHERE email = ai.recipient_id LIMIT 1) as `recipientName`,
                             atype.image_url as imageUrl,
@@ -230,7 +237,7 @@ class InstructorDAO
     {
         $query = "INSERT INTO {$this->awardTypeExclusionsTable} (context_id, link_id, configuration_id, award_type_id)
         VALUES (:contextId, :linkId, :configurationId, :typeId);";
-        $arr = array(':contextId' => $contextId, ':linkId' => $linkId,':configurationId' => $configurationId, ':typeId' => $typeId);
+        $arr = array(':contextId' => $contextId, ':linkId' => $linkId, ':configurationId' => $configurationId, ':typeId' => $typeId);
         $this->PDOX->queryDie($query, $arr);
         return $this->PDOX->lastInsertId();
     }

@@ -64,7 +64,7 @@ AppRouter::add($resource . '/recipients', function () {
     return AppRouter::sendJson($res);
 }, 'get');
 
-/** READ Roster of Recipients Awards */
+/** READ Award Types */
 AppRouter::add($resource . '/award-types', function () {
     $res = LearnerCtr::getEnabledAwardTypes();
     return AppRouter::sendJson($res);
