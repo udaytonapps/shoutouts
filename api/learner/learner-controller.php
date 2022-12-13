@@ -82,11 +82,35 @@ class LearnerCtr
         $type = self::$DAO->getAwardType($data['awardTypeId']);
 
         // Email any instructors with notifications not turned off
-        $subject = "New 'Shoutout' sent in " . $CONTEXT->title;
-        $personalMsg = "Your 'Shoutout' has been submitted.\n\nCourse: " . $CONTEXT->title . "\nRecipient: " . $data['recipientId'] . "\nRequest Type: " . $type['label'] . "\nYour Comment: " . ($data['comment']);
-        CommonService::sendEmailToActiveUser($subject, $personalMsg);
+        $subject = "New Shoutout sent in " . $CONTEXT->title;
+
+        // Not sending email to sender, commenting out for now in case it is requested...
+        // $personalMsg = "Your Shoutout has been submitted.\n\nCourse: " . $CONTEXT->title . "\nRecipient: " . $data['recipientId'] . "\nRequest Type: " . $type['label'] . "\nYour Comment: " . ($data['comment']);
+        // CommonService::sendEmailToActiveUser($subject, $personalMsg);
+
+        // Need to find recipient name here, for use in all emails
+        $recipientName = null;
+        $recipientEmail = null;
+        if (CommonService::$hasRoster) {
+            // If there is a roster, recipientId is the person_sourcedid from roster
+            foreach (CommonService::$rosterData as $learner) {
+                if ($data['recipientId'] = $learner['person_sourcedid']) {
+                    $recipientName = $learner['person_name_full'];
+                    $recipientEmail = $learner['person_contact_email_primary'];
+                }
+            }
+        } else {
+            // If no roster, recipientId is Tsugi user_id
+            $res = CommonService::getUserContactByTsugiId($data['recipientId']);
+            $recipientName = $res['displayname'];
+            $recipientEmail = $res['email'];
+        }
+
         // Send email to instructor IF they have that configuration
-        $instructorMsg = "A new 'Shoutout' has been submitted.\n\nCourse: " . $CONTEXT->title . "\nRecipient: " . $data['recipientId'] . "\nSender: " . self::$user->displayname . "\nRequest Type: " . $type['label'] . "\nLearner Comment: " . $data['comment'];
+        $messageContent = "A new Shoutout has been submitted.\n\nCourse: " . $CONTEXT->title . "\nRecipient: " . $recipientName . "\nSender: " . self::$user->displayname . "\nShoutout Type: " . $type['label'];
+        if ($data['comment']) {
+            $messageContent = $messageContent . "\nSender Comment: " . $data['comment'];
+        }
         if (CommonService::$hasRoster) {
             // If there is a roster, check notifications settings for each
             foreach (CommonService::$rosterData as $rosterPerson) {
@@ -99,7 +123,7 @@ class LearnerCtr
                         $option = self::$DAO->getInstructorNotificationOption($instructor['user_id'], $config['configuration_id']);
                     }
                     if (!isset($option['notifications_pref']) || $option['notifications_pref'] == true) {
-                        CommonService::sendEmailFromActiveUser($rosterPerson['person_name_full'], $rosterPerson['person_contact_email_primary'], $subject, $instructorMsg);
+                        CommonService::sendEmailFromActiveUser($rosterPerson['person_name_full'], $rosterPerson['person_contact_email_primary'], $subject, $messageContent);
                     }
                 }
             }
@@ -109,24 +133,31 @@ class LearnerCtr
             $option = self::$DAO->getInstructorNotificationOption($instructor['user_id'], $config['configuration_id']);
             // Check first to see if notifications are turned off.
             if (!isset($option['notifications_pref']) || $option['notifications_pref'] == true) {
-                CommonService::sendEmailFromActiveUser($instructor['displayname'], $instructor['email'], $subject, $instructorMsg);
+                CommonService::sendEmailFromActiveUser($instructor['displayname'], $instructor['email'], $subject, $messageContent);
             }
         }
 
         if ($awardStatus == 'ACCEPTED') {
-            self::sendApprovalEmailToRecipient($data['recipientId'], $data['awardTypeId']);
+            self::sendApprovalEmailToRecipient($recipientName, $recipientEmail, $data['awardTypeId'], $data['comment'], $config['anonymous_enabled']);
         }
         return $res;
     }
 
-    static function sendApprovalEmailToRecipient($recipientId, $typeId)
+    static function sendApprovalEmailToRecipient($recipientName, $recipientEmail, $typeId, $comment, $anonymous)
     {
         global $CONTEXT;
         $subject = "You received a Shoutout in " . $CONTEXT->title;
         $type = self::$DAO->getAwardType($typeId);
-        // $recipient = self::$commonDAO->getUserContact($recipientId);
-        $instructorMsg = "Congrats! You received a Shoutout!\n\nCourse: {$CONTEXT->title}\nAward Type: {$type['label']}";
-        CommonService::sendEmailFromActiveUser(null, $recipientId, $subject, $instructorMsg);
+        // If not anonymous, need to find sender information (based on award senderId) and award comment
+        $messageContent = "Congrats! You received a Shoutout!\n\nCourse: {$CONTEXT->title}\nShoutout Type: {$type['label']}";
+        if (!$anonymous) {
+            $senderName = self::$user->displayname;
+            $messageContent = $messageContent . "\nSender: {$senderName}";
+            if ($comment) {
+                $messageContent = $messageContent . "\nComment: {$comment}";
+            }
+        }
+        CommonService::sendEmailFromActiveUser($recipientName, $recipientEmail, $subject, $messageContent);
     }
 
     /** Get received awards */
@@ -179,17 +210,21 @@ class LearnerCtr
             } else {
                 $award['approved'] = true;
             }
-            $names = explode(" ", $award['senderName']);
-            if (count($names) > 1) {
-                $familyName = array_pop($names);
-                $givenName = implode(" ", $names);
-                $award['senderName'] = $familyName . ', ' . $givenName;
+            if ($award['senderName']) {
+                $names = explode(" ", $award['senderName']);
+                if (count($names) > 1) {
+                    $familyName = array_pop($names);
+                    $givenName = implode(" ", $names);
+                    $award['senderName'] = $familyName . ', ' . $givenName;
+                }
             }
-            $names = explode(" ", $award['recipientName']);
-            if (count($names) > 1) {
-                $familyName = array_pop($names);
-                $givenName = implode(" ", $names);
-                $award['recipientName'] = $familyName . ', ' . $givenName;
+            if ($award['recipientName']) {
+                $names = explode(" ", $award['recipientName']);
+                if (count($names) > 1) {
+                    $familyName = array_pop($names);
+                    $givenName = implode(" ", $names);
+                    $award['recipientName'] = $familyName . ', ' . $givenName;
+                }
             }
         }
         return $sentAwards;
@@ -269,34 +304,6 @@ class LearnerCtr
                     }
                 }
                 $leader['awards'] = self::$DAO->getReceivedApprovedCourseAwards($leader['recipient_id'], self::$contextId);
-            }
-            return $leaders;
-        } else {
-            return array();
-        }
-    }
-
-    /** Get enabled award types */
-    static function getLeaderboardOLD()
-    {
-        $config = self::getContextConfiguration();
-        if ($config['leaderboard_enabled']) {
-            // 5 for now, can be configurable if needed
-            $leaders = self::$DAO->getLeaderboardLeaders(self::$contextId, 5);
-            // Then loop over leaders and get their awards
-            foreach ($leaders as &$leader) {
-                if (!$config['anonymous_enabled']) {
-                    $names = explode(" ", $leader['displayname']);
-                    if (count($names) > 1) {
-                        $leader['familyName'] = array_pop($names);
-                        $leader['givenName'] = implode(" ", $names);
-                        $leader['lastFirst'] = $leader['familyName'] . ', ' . $leader['givenName'];
-                    } else {
-                        $leader['familyName'] = $leader['displayname'];
-                        $leader['givenName'] = "";
-                    }
-                }
-                $leader['awards'] = self::$DAO->getReceivedApprovedCourseAwards($leader['email'], self::$contextId);
             }
             return $leaders;
         } else {
