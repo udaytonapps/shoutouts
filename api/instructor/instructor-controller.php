@@ -98,18 +98,17 @@ class InstructorCtr
                     } else {
                         $family = $user[0];
                     }
+                    $leader = array(
+                        'awards' => self::$learnerDAO->getReceivedApprovedCourseAwards($user['user_id'], self::$contextId),
+                        'userId' => $user['user_id'],
+                        'sentCount' => $learnerData['sent_count'] ?? 0,
+                        'receivedCount' => $learnerData['received_count'] ?? 0,
+                        'givenName' => $given,
+                        'familyName' => $family,
+                        'lastFirst' => $family . ', ' . $given,
+                    );
+                    array_push($leaders, $leader);
                 }
-
-                $leader = array(
-                    'awards' => self::$learnerDAO->getReceivedApprovedCourseAwards($user['user_id'], self::$contextId),
-                    'userId' => $user['user_id'],
-                    'sentCount' => $learnerData['sent_count'] ?? 0,
-                    'receivedCount' => $learnerData['received_count'] ?? 0,
-                    'givenName' => $given,
-                    'familyName' => $family,
-                    'lastFirst' => $family . ', ' . $given,
-                );
-                array_push($leaders, $leader);
             }
         }
         return $leaders;

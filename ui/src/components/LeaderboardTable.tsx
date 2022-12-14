@@ -41,13 +41,16 @@ function LeaderboardTable(props: LeaderboardTableProps) {
     props;
 
   useEffect(() => {
-    rows.forEach((row) => {
-      row.sentValue = row.sentCount * configuration.awarded_value;
-      row.receivedValue = row.receivedCount * configuration.received_value;
-    });
+    if (configuration && rows) {
+      rows.forEach((row) => {
+        row.sentValue = row.sentCount * configuration.awarded_value;
+        row.receivedValue = row.receivedCount * configuration.received_value;
+      });
+    }
+    setFilteredRows(rows);
   }, [configuration, rows]);
 
-  const [filteredRows, setFilteredRows] = useState(rows);
+  const [filteredRows, setFilteredRows] = useState<LeaderboardLeader[]>([]);
   // const [orderBy, setOrderBy] = useState<keyof LeaderboardLeader>("count");
   const [orderBy, setOrderBy] = useState<keyof LeaderboardLeader>(
     sorting ? "lastFirst" : "receivedCount"

@@ -144,7 +144,7 @@ class LearnerDAO
                             ai.award_status as `status`,
                             ai.recipient_id as `recipientId`,
                             (SELECT displayname FROM {$this->p}lti_user WHERE user_id = ai.sender_id LIMIT 1) as `senderName`,
-                            (SELECT displayname FROM {$this->p}lti_user WHERE ai.recipient_id = email LIMIT 1) as `recipientName`,
+                            (SELECT displayname FROM {$this->p}lti_user WHERE user_id = ai.recipient_id LIMIT 1) as `recipientName`,
                             atype.image_url as imageUrl,
                             atype.label as label,
                             atype.short_description as 'description'
