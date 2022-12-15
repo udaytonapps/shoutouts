@@ -48,44 +48,107 @@ class InstructorCtr
         self::$DAO->deleteAlert($alertId);
     }
 
-    /** Get enabled award types */
+    /** Get awards grouped by user */
     static function getAllAwards()
     {
-        $leaders = self::$DAO->getAllAwards(self::$contextId);
-        // Then loop over leaders and get their awards
-        foreach ($leaders as &$leader) {
-            $names = explode(" ", $leader['displayname']);
-            if (count($names) > 1) {
-                $leader['familyName'] = array_pop($names);
-                $leader['givenName'] = implode(" ", $names);
-                $leader['lastFirst'] = $leader['familyName'] . ', ' . $leader['givenName'];
-            } else {
-                $leader['familyName'] = $leader['displayname'];
-                $leader['givenName'] = "";
+        $awards = self::$DAO->getAllAwards(self::$contextId);
+        $leaders = array();
+
+        // Need to consider roster
+        if (CommonService::$hasRoster) {
+            // If there is a roster, learner displayName will be populated from it (such as when launched from LMS)
+
+            foreach (CommonService::$rosterData as $learner) {
+                if ($learner["role"] == 'Learner') {
+                    // get basic learner info
+                    $contactInfo = CommonService::getUserContactByRosterId($learner['user_id']);
+                    $tsugiUserId = $contactInfo['user_id'] ?? null;
+
+                    // sent count, received count, etc.
+                    $learnerData = self::$DAO->getUserAwardInfo(self::$contextId, $tsugiUserId, $learner['person_sourcedid']);
+
+                    // format displayname... 
+                    $leader = array(
+                        'awards' => self::$learnerDAO->getReceivedApprovedCourseAwards($learner['person_sourcedid'], self::$contextId),
+                        'userId' => $tsugiUserId,
+                        'sentCount' => $learnerData['sent_count'] ?? 0,
+                        'receivedCount' => $learnerData['received_count'] ?? 0,
+                        'givenName' => $learner['person_name_given'],
+                        'familyName' => $learner['person_name_family'],
+                        'lastFirst' => $learner['person_name_family'] . ', ' . $learner['person_name_given'],
+                    );
+                    array_push($leaders, $leader);
+                }
             }
-            $leader['awards'] = self::$learnerDAO->getReceivedApprovedCourseAwards($leader['email'], self::$contextId);
+        } else {
+            // Foreach Tsugi user
+            $users = CommonCtr::getTsugiUsers();
+            foreach ($users as $user) {
+                $learnerData = self::$DAO->getUserAwardInfo(self::$contextId, $user['user_id'], $user['user_id']);
+
+                // Sender
+                $given = null;
+                $family = null;
+                if ($user['displayname']) {
+                    $names = explode(" ", $user['displayname']);
+                    if (count($names) > 1) {
+                        $user['displayname'] = $names[1] . ', ' . $names[0];
+                        $family = $names[1];
+                        $given = $names[0];
+                    } else {
+                        $family = $user[0];
+                    }
+                    $leader = array(
+                        'awards' => self::$learnerDAO->getReceivedApprovedCourseAwards($user['user_id'], self::$contextId),
+                        'userId' => $user['user_id'],
+                        'sentCount' => $learnerData['sent_count'] ?? 0,
+                        'receivedCount' => $learnerData['received_count'] ?? 0,
+                        'givenName' => $given,
+                        'familyName' => $family,
+                        'lastFirst' => $family . ', ' . $given,
+                    );
+                    array_push($leaders, $leader);
+                }
+            }
         }
         return $leaders;
     }
 
-    /** Get enabled award types */
+    /** Get award history records */
     static function getAwardsHistory()
     {
         $awards = self::$DAO->getAwardsHistory(self::$contextId);
+
+        // If there is a roster, displayname here will be null as it couldn't be looked up
+        if (CommonService::$hasRoster) {
+            // If there is a roster, learner displayName will be populated from it (such as when launched from LMS)
+            foreach (CommonService::$rosterData as $learner) {
+                foreach ($awards as &$request) {
+                    if ($learner["role"] == 'Learner' && isset($request['recipientId']) && $request['recipientId'] == $learner['person_sourcedid']) {
+                        $request['recipientName'] = $learner["person_name_given"] . ' ' . $learner["person_name_family"];
+                    }
+                }
+            }
+        }
+
         foreach ($awards as &$award) {
             // Sender
-            $names = explode(" ", $award['senderName']);
-            if (count($names) > 1) {
-                $award['senderName'] = $names[1] . ', ' . $names[0];
-            } else {
-                $award['senderName'] = $award[0];
+            if ($award['senderName']) {
+                $names = explode(" ", $award['senderName']);
+                if (count($names) > 1) {
+                    $award['senderName'] = $names[1] . ', ' . $names[0];
+                } else {
+                    $award['senderName'] = $award[0];
+                }
             }
             // Recipient
-            $names = explode(" ", $award['recipientName']);
-            if (count($names) > 1) {
-                $award['recipientName'] = $names[1] . ', ' . $names[0];
-            } else {
-                $award['recipientName'] = $award[0];
+            if ($award['recipientName']) {
+                $names = explode(" ", $award['recipientName']);
+                if (count($names) > 1) {
+                    $award['recipientName'] = $names[1] . ', ' . $names[0];
+                } else {
+                    $award['recipientName'] = $award[0];
+                }
             }
         }
         return $awards;
@@ -94,7 +157,41 @@ class InstructorCtr
     /** Get pending awards */
     static function getPendingAwards()
     {
-        return self::$DAO->getPendingAwards(self::$contextId);
+        $awards = self::$DAO->getPendingAwards(self::$contextId);
+
+        // If there is a roster, displayname here will be null as it couldn't be looked up
+        if (CommonService::$hasRoster) {
+            // If there is a roster, learner displayName will be populated from it (such as when launched from LMS)
+            foreach (CommonService::$rosterData as $learner) {
+                foreach ($awards as &$request) {
+                    if ($learner["role"] == 'Learner' && isset($request['recipientId']) && $request['recipientId'] == $learner['person_sourcedid']) {
+                        $request['recipientName'] = $learner["person_name_given"] . ' ' . $learner["person_name_family"];
+                    }
+                }
+            }
+        }
+
+        foreach ($awards as &$award) {
+            // Sender
+            if ($award['senderName']) {
+                $names = explode(" ", $award['senderName']);
+                if (count($names) > 1) {
+                    $award['senderName'] = $names[1] . ', ' . $names[0];
+                } else {
+                    $award['senderName'] = $award[0];
+                }
+            }
+            // Recipient
+            if ($award['recipientName']) {
+                $names = explode(" ", $award['recipientName']);
+                if (count($names) > 1) {
+                    $award['recipientName'] = $names[1] . ', ' . $names[0];
+                } else {
+                    $award['recipientName'] = $award[0];
+                }
+            }
+        }
+        return $awards;
     }
 
     static function updateAward($data)
@@ -110,14 +207,36 @@ class InstructorCtr
             $action = strtolower($updatedAward['award_status']);
             $subject = "Shoutout request $action for " . $CONTEXT->title;
             $type = self::$learnerDAO->getAwardType($updatedAward['award_type_id']);
-            // $recipient = self::$commonDAO->getUserContact($updatedAward['recipient_id']);
-            $reasonString = isset($updatedAward['moderation_comment']) ? "Instructor Comment: {$updatedAward['moderation_comment']}\n\n" : "";
-            $instructorMsg = "The Shoutout you sent has been {$action}.\n\n{$reasonString}Course: {$CONTEXT->title}\nRecipient: {$updatedAward['recipient_id']}\nAward Type: {$type['label']}\nSender Comment: {$updatedAward['sender_comment']}";
-            CommonService::sendEmailFromActiveUser($learner['displayname'], $learner['email'], $subject, $instructorMsg);
-            if ($data['status'] == 'ACCEPTED') {
-                self::sendApprovalEmailToRecipient($updatedAward['recipient_id'], $updatedAward['award_type_id']);
+
+            // Need to find recipient name here, for use in all emails
+            $recipientName = null;
+            $recipientEmail = null;
+            if (CommonService::$hasRoster) {
+                // If there is a roster, recipientId is the person_sourcedid from roster
+                foreach (CommonService::$rosterData as $learner) {
+                    if ($updatedAward['recipient_id'] = $learner['person_sourcedid']) {
+                        $recipientName = $learner['person_name_full'];
+                        $recipientEmail = $learner['person_contact_email_primary'];
+                    }
+                }
+            } else {
+                // If no roster, recipientId is Tsugi user_id
+                $res = CommonService::getUserContactByTsugiId($updatedAward['recipient_id']);
+                $recipientName = $res['displayname'];
+                $recipientEmail = $res['email'];
             }
-            return $res->rowCount();
+            $reasonString = isset($updatedAward['moderation_comment']) ? "Instructor Comment: {$updatedAward['moderation_comment']}\n\n" : "";
+            $instructorMsg = "The Shoutout you sent has been {$action}.\n\n{$reasonString}Course: {$CONTEXT->title}\nRecipient: {$recipientName}\nShoutout Type: {$type['label']}";
+            if ($updatedAward['sender_comment']) {
+                $instructorMsg = $instructorMsg . "\nSender Comment: {$updatedAward['sender_comment']}";
+            }
+            CommonService::sendEmailFromActiveUser($recipientName, $recipientEmail, $subject, $instructorMsg);
+            if ($data['status'] == 'ACCEPTED') {
+                $config = self::$learnerDAO->getContextConfiguration(self::$contextId);
+                $sender = CommonService::getUserContactByTsugiId($updatedAward['sender_id']);
+                self::sendApprovalEmailToRecipient($recipientName, $recipientEmail, $updatedAward['award_type_id'], $updatedAward['sender_comment'], $config['anonymous_enabled'], $sender['displayname']);
+            }
+            return $res;
         } else {
             // Row was not updated
             http_response_code(500);
@@ -126,14 +245,20 @@ class InstructorCtr
         }
     }
 
-    static function sendApprovalEmailToRecipient($recipientId, $typeId)
+    static function sendApprovalEmailToRecipient($recipientName, $recipientEmail, $typeId, $comment, $anonymous, $senderName)
     {
         global $CONTEXT;
         $subject = "You received a Shoutout in " . $CONTEXT->title;
         $type = self::$learnerDAO->getAwardType($typeId);
-        // $recipient = self::$commonDAO->getUserContact($recipientId);
-        $instructorMsg = "Congrats! You received a Shoutout!\n\nCourse: {$CONTEXT->title}\nAward Type: {$type['label']}";
-        CommonService::sendEmailFromActiveUser(null, $recipientId, $subject, $instructorMsg);
+        $messageContent = "Congrats! You received a Shoutout!\n\nCourse: {$CONTEXT->title}\nShoutout Type: {$type['label']}";
+        if (!$anonymous) {
+            // $senderName = self::$user->displayname;
+            $messageContent = $messageContent . "\nSender: {$senderName}";
+            if ($comment) {
+                $messageContent = $messageContent . "\nComment: {$comment}";
+            }
+        }
+        CommonService::sendEmailFromActiveUser($recipientName, $recipientEmail, $subject, $messageContent);
     }
 
     /** Creates a new configuration (along with associated categories) */

@@ -146,20 +146,86 @@ $DATABASE_UPGRADE = function ($oldversion) {
     if (!isset($q['data_exists']) || $q['data_exists'] != true) {
         // There are no award types in the db - default them
         $sql = "INSERT INTO {$SHOUTOUTS_TYPE_TABLE_NAME} 
-                    (image_url, label, short_description)
+                    (award_type_id, image_url, label, short_description)
                 VALUES
-                    ('/assets/cool_collaborator.png', 'Cool Collaborator', 'You’re a helpful person who makes sure everything is getting done and people have what they need. Keep it up!'),
-                    ('/assets/legendary_leader.png', 'Legendary Leader', 'You organize. You plan. You find success. Way to take initiative!'),
-                    ('/assets/resourceful_reporter.png', 'Resourceful Reporter', 'No one takes notes and summarizes work like you. Your hard work is appreciated!'),
-                    ('/assets/placeholder.png', 'Prodigious Presenter', 'Did you just present at TEDx? That’s how good your presentation was. Awesome stuff!'),
-                    ('/assets/placeholder.png', 'Terrific Techy', 'Google’s got nothing on your tech skills. Where would we be without you?'),
-                    ('/assets/placeholder.png', 'Impressive Includer', 'You engage everyone and make folks feel comfortable. I appreciate you!'),
-                    ('/assets/placeholder.png', 'Rigorous Researcher', 'Finding information can be tough, but somehow you manage. Awesome!'),
-                    ('/assets/placeholder.png', 'Dynamic Dialoguer', 'You keep the conversation going with your insightful comments. Can’t wait to hear more!'),
-                    ('/assets/placeholder.png', 'Idea Inventor', 'It all starts with an idea, and you have ‘em. Keep your ideas coming!'),
-                    ('/assets/placeholder.png', 'Fabulous Flyer', 'You make UD and our classroom community special. Thanks for everything!'),
-                    ('/assets/placeholder.png', 'Huge High-Five', 'It’s a high-five. That’s the badge.'),
-                    ('/assets/placeholder.png', 'Marvelous Marianist', 'Faith, Mary, Community, Mission, and Inclusivity - you model these Marianist principles to your peers. Thank you!')";
+                    (
+                        1,
+                        '/assets/Awesome_Annotator.png',
+                        'Awesome Annotator',
+                        'A little note here, a thought-provoking question there. Your reading notes help us all learn!'
+                    ),
+                    (
+                        2,
+                        '/assets/Cool_Collaborator.png',
+                        'Cool Collaborator',
+                        'You’re a helpful person who makes sure everything is getting done and people have what they need. Keep it up!'
+                    ),
+                    (
+                        3,
+                        '/assets/Legendary_Leader.png',
+                        'Legendary Leader',
+                        'You organize. You plan. You find success. Way to take initiative!'
+                    ),
+                    (
+                        4,
+                        '/assets/Resourceful_Reporter.png',
+                        'Resourceful Reporter',
+                        'No one takes notes and summarizes work like you. Your hard work is appreciated!'
+                    ),
+                    (
+                        5,
+                        '/assets/Prodigious_Presenter.png',
+                        'Prodigious Presenter',
+                        'Did you just present at TEDx? That’s how good your presentation was. Awesome stuff!'
+                    ),
+                    (
+                        6,
+                        '/assets/Terrific_Techy.png',
+                        'Terrific Techy',
+                        'Google’s got nothing on your tech skills. Where would we be without you?'
+                    ),
+                    (
+                        7,
+                        '/assets/Impressive_Includer.png',
+                        'Impressive Includer',
+                        'You engage everyone and make folks feel comfortable. I appreciate you!'
+                    ),
+                    (
+                        8,
+                        '/assets/Rigorous_Researcher.png',
+                        'Rigorous Researcher',
+                        'Finding information can be tough, but somehow you manage. Awesome!'
+                    ),
+                    (
+                        9,
+                        '/assets/Dynamic_Dialoguer.png',
+                        'Dynamic Dialoguer',
+                        'You keep the conversation going with your insightful comments. Can’t wait to hear more!'
+                    ),
+                    (
+                        10,
+                        '/assets/Idea_Inventor.png',
+                        'Idea Inventor',
+                        'It all starts with an idea, and you have ‘em. Keep your ideas coming!'
+                    ),
+                    (
+                        11,
+                        '/assets/Fabulous_Flyer.png',
+                        'Fabulous Flyer',
+                        'You make UD and our classroom community special. Thanks for everything!'
+                    ),
+                    (
+                        12,
+                        '/assets/Huge_High-Five.png',
+                        'Huge High-Five',
+                        'It’s a high-five. That’s the badge.'
+                    ),
+                    (
+                        13,
+                        '/assets/Marvelous_Marianist.png',
+                        'Marvelous Marianist',
+                        'Faith, Mary, Community, Mission, and Inclusivity - you model these Marianist principles to your peers. Thank you!'
+                    )";
         echo ("Upgrading: " . $sql . "<br/>\n");
         error_log("Upgrading: " . $sql);
         $q = $PDOX->queryDie($sql);

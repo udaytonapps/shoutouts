@@ -89,7 +89,7 @@ function PendingTable(props: PendingTableProps) {
               <TableCell>
                 <TableHeaderSort
                   column={"label"}
-                  columnLabel={"Award Type"}
+                  columnLabel={"Shoutout"}
                   {...{ order, orderBy, setOrder, setOrderBy }}
                 ></TableHeaderSort>
               </TableCell>
@@ -107,7 +107,7 @@ function PendingTable(props: PendingTableProps) {
           <TableBody>
             {!sortedFilteredRows.length ? (
               <TableRow>
-                <TableCell colSpan={5} sx={{ textAlign: "center" }}>
+                <TableCell colSpan={6} sx={{ textAlign: "center" }}>
                   <Typography>No results</Typography>
                 </TableCell>
               </TableRow>

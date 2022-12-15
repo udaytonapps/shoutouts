@@ -3,7 +3,6 @@ import {
   Alert,
   Badge,
   Box,
-  Button,
   IconButton,
   Tab,
   Tabs,
@@ -59,6 +58,9 @@ function InstructorView() {
   // Even if moderation is turned off, will show if un-approved items will remain
   if (configuration?.moderation_enabled || pendingAwards.length > 0) {
     tabs.unshift("PENDING");
+  }
+  if (configuration?.leaderboard_enabled) {
+    tabs.push("LEADERBOARD");
   }
 
   useEffect(() => {
@@ -204,6 +206,10 @@ function InstructorView() {
     }
   };
 
+  const leaderboardRows = allAwards.filter((row) => {
+    return row.awards.length > 0;
+  });
+
   return (
     <>
       {configuration && (
@@ -278,6 +284,7 @@ function InstructorView() {
                 {tab === "AWARDED" && (
                   <>
                     <LeaderboardTable
+                      isAwardedView={true}
                       configuration={configuration}
                       rows={allAwards}
                       loading={loading}
@@ -294,6 +301,15 @@ function InstructorView() {
                       loading={loading}
                       filters={historyTableFilters}
                       openReviewDialog={handleOpenReviewDialogFromHistory}
+                    />
+                  </>
+                )}
+                {tab === "LEADERBOARD" && (
+                  <>
+                    <LeaderboardTable
+                      configuration={configuration}
+                      rows={leaderboardRows}
+                      loading={loading}
                     />
                   </>
                 )}
@@ -346,7 +362,7 @@ const pendingTableFilters = [
   },
   {
     column: "label",
-    label: "Award Type",
+    label: "Shoutout",
     type: "enum",
   },
 ];
@@ -366,7 +382,7 @@ const historyTableFilters = [
   },
   {
     column: "label",
-    label: "Award Type",
+    label: "Shoutout",
     type: "enum",
   },
   {

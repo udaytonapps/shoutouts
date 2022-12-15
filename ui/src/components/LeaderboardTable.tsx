@@ -31,21 +31,26 @@ interface LeaderboardTableProps {
   loading: boolean;
   filters?: any[];
   sorting?: boolean;
+  isAwardedView?: boolean;
 }
 
 /** Shows the history of requests of all available students */
 function LeaderboardTable(props: LeaderboardTableProps) {
   const appInfo = useContext(AppContext);
-  const { configuration, rows, loading, filters, sorting } = props;
+  const { configuration, rows, loading, filters, sorting, isAwardedView } =
+    props;
 
   useEffect(() => {
-    rows.forEach((row) => {
-      row.sentValue = row.sentCount * configuration.awarded_value;
-      row.receivedValue = row.receivedCount * configuration.received_value;
-    });
+    if (configuration && rows) {
+      rows.forEach((row) => {
+        row.sentValue = row.sentCount * configuration.awarded_value;
+        row.receivedValue = row.receivedCount * configuration.received_value;
+      });
+    }
+    setFilteredRows(rows);
   }, [configuration, rows]);
 
-  const [filteredRows, setFilteredRows] = useState(rows);
+  const [filteredRows, setFilteredRows] = useState<LeaderboardLeader[]>([]);
   // const [orderBy, setOrderBy] = useState<keyof LeaderboardLeader>("count");
   const [orderBy, setOrderBy] = useState<keyof LeaderboardLeader>(
     sorting ? "lastFirst" : "receivedCount"
@@ -111,7 +116,7 @@ function LeaderboardTable(props: LeaderboardTableProps) {
                 )}
               </TableCell>
 
-              {appInfo.isInstructor && configuration.received_value > 0 && (
+              {isAwardedView && configuration.received_value > 0 && (
                 <TableCell align="center">
                   {sorting ? (
                     <TableHeaderSort
@@ -124,7 +129,7 @@ function LeaderboardTable(props: LeaderboardTableProps) {
                   )}
                 </TableCell>
               )}
-              {appInfo.isInstructor && (
+              {isAwardedView && (
                 <TableCell align="center">
                   {sorting ? (
                     <TableHeaderSort
@@ -137,7 +142,7 @@ function LeaderboardTable(props: LeaderboardTableProps) {
                   )}
                 </TableCell>
               )}
-              {appInfo.isInstructor && configuration.awarded_value > 0 && (
+              {isAwardedView && configuration.awarded_value > 0 && (
                 <TableCell align="center">
                   {sorting ? (
                     <TableHeaderSort
@@ -153,7 +158,7 @@ function LeaderboardTable(props: LeaderboardTableProps) {
             </TableRow>
             {loading && (
               <TableRow>
-                <TableCell colSpan={5} padding={"none"}>
+                <TableCell colSpan={6} padding={"none"}>
                   <LinearProgress />
                 </TableCell>
               </TableRow>
@@ -162,7 +167,7 @@ function LeaderboardTable(props: LeaderboardTableProps) {
           <TableBody>
             {!sortedFilteredRows.length ? (
               <TableRow>
-                <TableCell colSpan={3} sx={{ textAlign: "center" }}>
+                <TableCell colSpan={6} sx={{ textAlign: "center" }}>
                   <Typography>No results</Typography>
                 </TableCell>
               </TableRow>
@@ -173,50 +178,54 @@ function LeaderboardTable(props: LeaderboardTableProps) {
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                 >
                   <TableCell component="th" scope="row">
-                    {configuration.anonymous_enabled
+                    {!isAwardedView && configuration.anonymous_enabled
                       ? `${index + 1}${nth(index + 1)} Place`
                       : `${row.familyName}, ${row.givenName}`}
                   </TableCell>
                   <TableCell>
                     <Box display={"flex"} flexWrap={"wrap"}>
-                      {assembleConsolidatedAwardData(row.awards).map(
-                        (awardData, i) => (
-                          <Box key={`award-${awardData.label}-${i}`}>
-                            <Tooltip
-                              title={
-                                awardData.count > 1
-                                  ? `${awardData.label} x ${awardData.count}`
-                                  : awardData.label
-                              }
-                            >
-                              <Box>
-                                <Badge
-                                  badgeContent={
-                                    awardData.count > 1 ? awardData.count : null
+                      {row.awards.length
+                        ? assembleConsolidatedAwardData(row.awards).map(
+                            (awardData, i) => (
+                              <Box key={`award-${awardData.label}-${i}`}>
+                                <Tooltip
+                                  title={
+                                    awardData.count > 1
+                                      ? `${awardData.label} x ${awardData.count}`
+                                      : awardData.label
                                   }
-                                  color="primary"
                                 >
-                                  <AwardImage
-                                    label={awardData.label}
-                                    url={awardData.imageUrl}
-                                    pixels={50}
-                                  />
-                                </Badge>
+                                  <Box>
+                                    <Badge
+                                      badgeContent={
+                                        awardData.count > 1
+                                          ? awardData.count
+                                          : null
+                                      }
+                                      color="primary"
+                                    >
+                                      <AwardImage
+                                        label={awardData.label}
+                                        url={awardData.imageUrl}
+                                        pixels={50}
+                                      />
+                                    </Badge>
+                                  </Box>
+                                </Tooltip>
                               </Box>
-                            </Tooltip>
-                          </Box>
-                        )
-                      )}
+                            )
+                          )
+                        : ""}
                     </Box>
                   </TableCell>
                   <TableCell align="center">{row.receivedCount}</TableCell>
-                  {appInfo.isInstructor && configuration.received_value > 0 && (
+                  {isAwardedView && configuration.received_value > 0 && (
                     <TableCell align="center">{row.receivedValue}</TableCell>
                   )}
-                  {appInfo.isInstructor && (
+                  {isAwardedView && (
                     <TableCell align="center">{row.sentCount}</TableCell>
                   )}
-                  {appInfo.isInstructor && configuration.awarded_value > 0 && (
+                  {isAwardedView && configuration.awarded_value > 0 && (
                     <TableCell align="center">{row.sentValue}</TableCell>
                   )}
                 </TableRow>

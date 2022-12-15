@@ -36,12 +36,6 @@ export const getEnvironment = (): CraEnvironment => {
   return environment;
 };
 
-/** Gets the sessionId from the browser window (where it is served by the backend) */
-export const getSessionId = (): string => {
-  const appConfig = (window as DecoratedWindow).appConfig || null;
-  return appConfig?.sessionId || "";
-};
-
 // SORTING
 
 const compareStrings = (a: string, b: string) => {

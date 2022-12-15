@@ -1,5 +1,6 @@
 import {
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -12,10 +13,11 @@ interface ConfirmationDialogProps {
   handleConfirm: () => void;
   open: boolean;
   message?: string;
+  loading: boolean;
 }
 
 export default function ConfirmationDialog(props: ConfirmationDialogProps) {
-  const { handleClose, handleConfirm, open, message } = props;
+  const { handleClose, handleConfirm, open, message, loading } = props;
   return (
     <div>
       <Dialog
@@ -31,11 +33,16 @@ export default function ConfirmationDialog(props: ConfirmationDialogProps) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} variant="outlined">
+          <Button disabled={loading} onClick={handleClose} variant="outlined">
             Cancel
           </Button>
-          <Button onClick={handleConfirm} autoFocus variant={"contained"}>
-            Confirm
+          <Button
+            disabled={loading}
+            onClick={handleConfirm}
+            autoFocus
+            variant={"contained"}
+          >
+            {loading ? <CircularProgress /> : "Confirm"}
           </Button>
         </DialogActions>
       </Dialog>

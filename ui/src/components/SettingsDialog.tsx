@@ -104,7 +104,6 @@ function SettingsDialog(props: SettingsDialogProps) {
     // Handle any special formatting, as needed
     // Also need to save any shoutout exclusions
     const exclusions: string[] = [];
-    console.log(Object.keys(typeDisabledMap));
     Object.keys(typeDisabledMap).forEach((typeId) => {
       if (typeDisabledMap[typeId] === true) {
         exclusions.push(typeId);
@@ -297,7 +296,7 @@ function SettingsDialog(props: SettingsDialogProps) {
                 </Box>
               </Box>
               {/* COLUMN 2 */}
-              <Box pl={3}>
+              <Box pl={3} width={"50%"}>
                 {/* EMAIL NOTIFICATIONS */}
                 <Typography variant="h6">Notifications</Typography>
                 <Box mb={2}>
@@ -331,6 +330,13 @@ function SettingsDialog(props: SettingsDialogProps) {
                   </Box>
                 </Box>
                 <Typography variant="h6">Values</Typography>
+                <Box mb={1} pl={5.5}>
+                  <Typography variant="body2">
+                    This is an optional feature to set values for sending and
+                    receiving Shoutouts. These values do not get sent to the
+                    Isidore Gradebook.
+                  </Typography>
+                </Box>
                 <Box width={"100%"}>
                   {/* SEND VALUE */}
                   <Box
@@ -375,7 +381,7 @@ function SettingsDialog(props: SettingsDialogProps) {
                       />
                     </Box>
                   </Box>
-                  {/* SEND VALUE */}
+                  {/* RECEIVE VALUE */}
                   <Box
                     display={"flex"}
                     mt={1}
