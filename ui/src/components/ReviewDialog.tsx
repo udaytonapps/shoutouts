@@ -114,7 +114,7 @@ function ReviewDialog(props: ReviewDialogProps) {
               </Box>
               {/* REQUEST TYPE */}
               <Box p={1} mb={2} sx={{ maxWidth: 600, width: "100%" }}>
-                <AwardPanel award={requestRow} configuration={configuration} />
+                <AwardPanel award={requestRow} />
               </Box>
               {/* INSTRUCTOR ACTION CHOICE */}
               {readonly ? (

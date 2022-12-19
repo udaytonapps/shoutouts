@@ -259,8 +259,6 @@ class InstructorDAO
                             t.label as `label`,
                             t.short_description as `description`
         FROM {$this->awardTypeTable} t
-        LEFT OUTER JOIN {$this->awardTypeExclusionsTable} e
-        ON t.award_type_id = e.award_type_id
         WHERE (t.context_id = :contextId OR t.context_id IS NULL)
         ORDER BY t.label ASC;";
         $arr = array(':contextId' => $contextId);

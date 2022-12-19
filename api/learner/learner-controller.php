@@ -94,7 +94,7 @@ class LearnerCtr
         if (CommonService::$hasRoster) {
             // If there is a roster, recipientId is the person_sourcedid from roster
             foreach (CommonService::$rosterData as $learner) {
-                if ($data['recipientId'] = $learner['person_sourcedid']) {
+                if ($data['recipientId'] == $learner['person_sourcedid']) {
                     $recipientName = $learner['person_name_full'];
                     $recipientEmail = $learner['person_contact_email_primary'];
                 }

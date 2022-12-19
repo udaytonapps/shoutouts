@@ -148,7 +148,7 @@ export default function LearnerDashboard(props: LearnerDashboardProps) {
                       p={1}
                       sx={{ maxWidth: 600, width: "100%" }}
                     >
-                      <AwardPanel award={award} configuration={configuration} />
+                      <AwardPanel award={award} />
                     </Box>
                   ))}
                 </Box>
