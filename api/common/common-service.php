@@ -131,7 +131,6 @@ class CommonService
     /** Often notification or communication from an instructor to a student, or vice versa */
     static function sendEmailFromActiveUser($recipientName, $recipientEmail, $subject, $body)
     {
-        global $USER;
         if (isset($recipientName)) {
             $salutation = "Hi " . $recipientName . ",\n\n";
         } else {
@@ -143,7 +142,7 @@ class CommonService
         $msg = wordwrap($msg, 120);
 
         $headers = "From: " . self::getReplyToName() . " <" . self::getReplyToEmail() . ">\n";
-        $headers = $headers . "Reply-to: " . $USER->displayname . " <" . $USER->email . ">\n";
+        $headers = $headers . "Reply-to: " . self::getReplyToName() . " <" . self::getReplyToEmail() . ">\n";
 
         mail($recipientEmail, $subject, $msg, $headers);
     }
