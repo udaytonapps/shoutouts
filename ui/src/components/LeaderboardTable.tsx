@@ -72,6 +72,11 @@ function LeaderboardTable(props: LeaderboardTableProps) {
     return ["st", "nd", "rd"][((((n + 90) % 100) - 10) % 10) - 1] || "th";
   }
 
+  // Initialize the totalValue prop to allow for sorting
+  rows.forEach((row) => {
+    row.totalValue = (row.sentValue || 0) + (row.receivedValue || 0);
+  });
+
   return (
     <Box>
       {filters && (
@@ -246,7 +251,7 @@ function LeaderboardTable(props: LeaderboardTableProps) {
                     (configuration.received_value > 0 ||
                       configuration.awarded_value > 0) && (
                       <TableCell sx={{ fontWeight: "bold" }} align="center">
-                        {(row.sentValue || 0) + (row.receivedValue || 0)}
+                        {row.totalValue}
                       </TableCell>
                     )}
                 </TableRow>
