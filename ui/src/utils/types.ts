@@ -69,6 +69,7 @@ export interface LeaderboardLeader {
   lastFirst?: string;
   sentValue?: number;
   receivedValue?: number;
+  totalValue?: number;
 }
 
 export interface AllAwardsTableRecord extends LeaderboardLeader {}
