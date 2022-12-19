@@ -115,20 +115,6 @@ function LeaderboardTable(props: LeaderboardTableProps) {
                   <>Total Received</>
                 )}
               </TableCell>
-
-              {isAwardedView && configuration.received_value > 0 && (
-                <TableCell align="center">
-                  {sorting ? (
-                    <TableHeaderSort
-                      column={"receivedValue"}
-                      columnLabel={"Received Value"}
-                      {...{ order, orderBy, setOrder, setOrderBy }}
-                    ></TableHeaderSort>
-                  ) : (
-                    <>Received Value</>
-                  )}
-                </TableCell>
-              )}
               {isAwardedView && (
                 <TableCell align="center">
                   {sorting ? (
@@ -139,6 +125,19 @@ function LeaderboardTable(props: LeaderboardTableProps) {
                     ></TableHeaderSort>
                   ) : (
                     <>Total Sent</>
+                  )}
+                </TableCell>
+              )}
+              {isAwardedView && configuration.received_value > 0 && (
+                <TableCell align="center">
+                  {sorting ? (
+                    <TableHeaderSort
+                      column={"receivedValue"}
+                      columnLabel={"Received Value"}
+                      {...{ order, orderBy, setOrder, setOrderBy }}
+                    ></TableHeaderSort>
+                  ) : (
+                    <>Received Value</>
                   )}
                 </TableCell>
               )}
@@ -155,10 +154,25 @@ function LeaderboardTable(props: LeaderboardTableProps) {
                   )}
                 </TableCell>
               )}
+              {isAwardedView &&
+                (configuration.received_value > 0 ||
+                  configuration.awarded_value > 0) && (
+                  <TableCell align="center">
+                    {sorting ? (
+                      <TableHeaderSort
+                        column={"totalValue"}
+                        columnLabel={"Total Value"}
+                        {...{ order, orderBy, setOrder, setOrderBy }}
+                      ></TableHeaderSort>
+                    ) : (
+                      <>Total Value</>
+                    )}
+                  </TableCell>
+                )}
             </TableRow>
             {loading && (
               <TableRow>
-                <TableCell colSpan={6} padding={"none"}>
+                <TableCell colSpan={7} padding={"none"}>
                   <LinearProgress />
                 </TableCell>
               </TableRow>
@@ -167,7 +181,7 @@ function LeaderboardTable(props: LeaderboardTableProps) {
           <TableBody>
             {!sortedFilteredRows.length ? (
               <TableRow>
-                <TableCell colSpan={6} sx={{ textAlign: "center" }}>
+                <TableCell colSpan={7} sx={{ textAlign: "center" }}>
                   <Typography>No results</Typography>
                 </TableCell>
               </TableRow>
@@ -219,15 +233,22 @@ function LeaderboardTable(props: LeaderboardTableProps) {
                     </Box>
                   </TableCell>
                   <TableCell align="center">{row.receivedCount}</TableCell>
-                  {isAwardedView && configuration.received_value > 0 && (
-                    <TableCell align="center">{row.receivedValue}</TableCell>
-                  )}
                   {isAwardedView && (
                     <TableCell align="center">{row.sentCount}</TableCell>
+                  )}
+                  {isAwardedView && configuration.received_value > 0 && (
+                    <TableCell align="center">{row.receivedValue}</TableCell>
                   )}
                   {isAwardedView && configuration.awarded_value > 0 && (
                     <TableCell align="center">{row.sentValue}</TableCell>
                   )}
+                  {isAwardedView &&
+                    (configuration.received_value > 0 ||
+                      configuration.awarded_value > 0) && (
+                      <TableCell sx={{ fontWeight: "bold" }} align="center">
+                        {(row.sentValue || 0) + (row.receivedValue || 0)}
+                      </TableCell>
+                    )}
                 </TableRow>
               ))
             )}

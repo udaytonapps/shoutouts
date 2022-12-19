@@ -214,7 +214,7 @@ class InstructorCtr
             if (CommonService::$hasRoster) {
                 // If there is a roster, recipientId is the person_sourcedid from roster
                 foreach (CommonService::$rosterData as $learner) {
-                    if ($updatedAward['recipient_id'] = $learner['person_sourcedid']) {
+                    if ($updatedAward['recipient_id'] == $learner['person_sourcedid']) {
                         $recipientName = $learner['person_name_full'];
                         $recipientEmail = $learner['person_contact_email_primary'];
                     }
@@ -230,10 +230,12 @@ class InstructorCtr
             if ($updatedAward['sender_comment']) {
                 $instructorMsg = $instructorMsg . "\nSender Comment: {$updatedAward['sender_comment']}";
             }
-            CommonService::sendEmailFromActiveUser($recipientName, $recipientEmail, $subject, $instructorMsg);
+            // Email the original sender
+            $sender = CommonService::getUserContactByTsugiId($updatedAward['sender_id']);
+            CommonService::sendEmailFromActiveUser($sender['displayname'], $sender['email'], $subject, $instructorMsg);
             if ($data['status'] == 'ACCEPTED') {
+                // Email the recipient
                 $config = self::$learnerDAO->getContextConfiguration(self::$contextId);
-                $sender = CommonService::getUserContactByTsugiId($updatedAward['sender_id']);
                 self::sendApprovalEmailToRecipient($recipientName, $recipientEmail, $updatedAward['award_type_id'], $updatedAward['sender_comment'], $config['anonymous_enabled'], $sender['displayname']);
             }
             return $res;
