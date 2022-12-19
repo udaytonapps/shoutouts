@@ -5,12 +5,12 @@ import { AwardsConfiguration, LearnerAward } from "../utils/types";
 
 interface AwardPanelProps {
   award: LearnerAward;
-  configuration: AwardsConfiguration;
 }
 
 /** Show basic AwardPanel info */
 export default function AwardPanel(props: AwardPanelProps) {
-  const { award, configuration } = props;
+  const { award } = props;
+
   return (
     <Card raised={true}>
       <CardHeader
@@ -43,10 +43,13 @@ export default function AwardPanel(props: AwardPanelProps) {
           >
             <Typography>{award.description}</Typography>
             <Box>
-              <Typography variant="body2" fontStyle={"italic"}>
-                {!configuration.anonymous_enabled && award.comment}
-              </Typography>
-              {!configuration.anonymous_enabled && (
+              {/* If set as anonymous, these fields won't come to the UI */}
+              {award.comment && (
+                <Typography variant="body2" fontStyle={"italic"}>
+                  {award.comment}
+                </Typography>
+              )}
+              {award.senderName && (
                 <Typography variant="caption">- {award.senderName}</Typography>
               )}
             </Box>
