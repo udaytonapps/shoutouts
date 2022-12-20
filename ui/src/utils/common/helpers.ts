@@ -1,5 +1,6 @@
+import { Theme } from "@mui/material";
 import { DateTime, Duration } from "luxon";
-import { AppInfo } from "../types";
+import { AppInfo, LearnerAward, RequestStatus } from "../types";
 import {
   APP_INFO_OVERRIDES,
   DB_DATE_TIME_FORMAT,
@@ -33,12 +34,6 @@ export const getEnvironment = (): CraEnvironment => {
   const environment =
     (process?.env.REACT_APP_ENV as CraEnvironment) || "production";
   return environment;
-};
-
-/** Gets the sessionId from the browser window (where it is served by the backend) */
-export const getSessionId = (): string => {
-  const appConfig = (window as DecoratedWindow).appConfig || null;
-  return appConfig?.sessionId || "";
 };
 
 // SORTING
@@ -173,4 +168,33 @@ export const generateGoogleCalendarUrl = (
     ctz: "America/New_York",
   });
   return `https://calendar.google.com/calendar/event?${urlParams.toString()}`;
+};
+
+export const getStatusColors = (theme: Theme) => {
+  const statusColors: Record<RequestStatus, string> = {
+    ACCEPTED: theme.palette.success.main,
+    PENDING: theme.palette.warning.main,
+    REJECTED: theme.palette.error.main,
+    SUBMITTED: theme.palette.warning.main,
+  };
+  return statusColors;
+};
+
+export const assembleConsolidatedAwardData = (awards: LearnerAward[]) => {
+  const consolidatedAwardData: {
+    [key: string]: { count: number; label: string; imageUrl: string };
+  } = {};
+  awards.forEach((award) => {
+    if (!consolidatedAwardData[award.label]) {
+      consolidatedAwardData[award.label] = {
+        count: 0,
+        label: award.label,
+        imageUrl: award.imageUrl,
+      };
+    }
+    consolidatedAwardData[award.label].count++;
+  });
+  return Object.values(consolidatedAwardData).sort((a, b) => {
+    return b.count - a.count;
+  });
 };

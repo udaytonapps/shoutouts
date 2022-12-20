@@ -1,10 +1,10 @@
 <?php
 
 $REGISTER_LTI2 = array(
-    "name" => "App Template",
-    "FontAwesome" => "fa-coins",
-    "short_name" => "Tokens",
-    "description" => "Create a learning application.",
+    "name" => "Shoutouts!",
+    "FontAwesome" => "fa-bullhorn",
+    "short_name" => "Shoutouts!",
+    "description" => "Give and receive shoutouts for exceptional contributions.",
     "messages" => array("launch", "launch_grade"),
     "license" => "Apache",
     "languages" => array(
@@ -14,6 +14,7 @@ $REGISTER_LTI2 = array(
         "internal"
     ),
     "tool_phase" => "new",
+    "hide_from_store" => true,
     // "video" => "",
     // "source_url" => "",
     // "screen_shots" => array(

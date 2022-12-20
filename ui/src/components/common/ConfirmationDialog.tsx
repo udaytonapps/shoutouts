@@ -1,5 +1,6 @@
 import {
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -11,10 +12,12 @@ interface ConfirmationDialogProps {
   handleClose: () => void;
   handleConfirm: () => void;
   open: boolean;
+  message?: string;
+  loading: boolean;
 }
 
 export default function ConfirmationDialog(props: ConfirmationDialogProps) {
-  const { handleClose, handleConfirm, open } = props;
+  const { handleClose, handleConfirm, open, message, loading } = props;
   return (
     <div>
       <Dialog
@@ -26,15 +29,20 @@ export default function ConfirmationDialog(props: ConfirmationDialogProps) {
         <DialogTitle id="confirmation-dialog-title">Confirmation</DialogTitle>
         <DialogContent>
           <DialogContentText id="confirmation-dialog-description">
-            Are you sure you want to submit this token request?
+            {message || "Are you sure?"}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} variant="outlined">
+          <Button disabled={loading} onClick={handleClose} variant="outlined">
             Cancel
           </Button>
-          <Button onClick={handleConfirm} autoFocus variant={"contained"}>
-            Confirm
+          <Button
+            disabled={loading}
+            onClick={handleConfirm}
+            autoFocus
+            variant={"contained"}
+          >
+            {loading ? <CircularProgress /> : "Confirm"}
           </Button>
         </DialogActions>
       </Dialog>
